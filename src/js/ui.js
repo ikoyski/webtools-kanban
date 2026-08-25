@@ -20,7 +20,7 @@ export const UI = {
 
     createColumnElement(column, cards) {
         const div = document.createElement('div');
-        div.className = 'flex-shrink-0 w-[300px] snap-center flex flex-col max-h-full bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700';
+        div.className = 'flex-shrink-0 w-[300px] flex flex-col max-h-full bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700';
         div.id = `col-${column.id}`;
 
         const cardCount = column.cardIds.length;
@@ -68,7 +68,7 @@ export const UI = {
                     <div class="flex flex-wrap gap-1">
                         ${labelsHTML}
                     </div>
-                    <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-slate-300 dark:text-slate-600 hover:text-slate-500 transition-colors">
+                    <div class="drag-handle cursor-grab active:cursor-grabbing p-1.5 text-slate-400 dark:text-slate-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors rounded-md hover:bg-slate-200 dark:hover:bg-slate-700" title="Drag to move">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
                         </svg>

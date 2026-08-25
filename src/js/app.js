@@ -81,6 +81,7 @@ class KanbanApp {
     }
 
     initSortables() {
+        console.log('--- Sortable Init Start ---');
         if (typeof Sortable === 'undefined') {
             console.error('SortableJS is not loaded. Please check the CDN link in index.html');
             return;
@@ -101,12 +102,15 @@ class KanbanApp {
                 animation: 150,
                 ghostClass: 'opacity-50 bg-blue-100 dark:bg-blue-900/30',
                 dragClass: 'rotate-2 shadow-xl',
+                onStart: (evt) => console.log('Drag started!', evt),
+                onUpdate: (evt) => console.log('Card moved!', evt),
                 onEnd: (evt) => {
-                    console.log('Sort ended:', evt);
+                    console.log('Drag ended!', evt);
                     this.handleSortEnd(evt);
                 }
             });
         });
+        console.log('--- Sortable Init End ---');
     }
 
     handleSortEnd(evt) {
