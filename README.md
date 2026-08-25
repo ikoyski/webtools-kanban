@@ -1,5 +1,8 @@
 # WebTools Kanban
 
+<img width="1053" height="509" alt="image" src="https://github.com/user-attachments/assets/5e0fd240-2aa4-45d6-8ff4-bd9ecbaecf18" />
+
+
 A modern, responsive Kanban board implementation featuring drag-and-drop functionality, dark mode support, and local storage persistence.
 
 ## Features
