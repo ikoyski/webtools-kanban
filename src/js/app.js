@@ -86,16 +86,22 @@ class KanbanApp {
             return;
         }
 
+        console.log('Initializing Sortables...');
         Object.values(this.state.columns).forEach(column => {
             const el = document.querySelector(`[data-column-id="${column.id}"]`);
-            if (!el) return;
+            if (!el) {
+                console.warn(`Column element not found for id: ${column.id}`);
+                return;
+            }
 
+            console.log(`Creating sortable for column: ${column.id}`);
             Sortable.create(el, {
                 group: 'kanban',
                 animation: 150,
                 ghostClass: 'opacity-50 bg-blue-100 dark:bg-blue-900/30',
                 dragClass: 'rotate-2 shadow-xl',
                 onEnd: (evt) => {
+                    console.log('Sort ended:', evt);
                     this.handleSortEnd(evt);
                 }
             });
