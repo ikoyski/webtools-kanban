@@ -8,7 +8,7 @@ A modern, responsive Kanban board implementation featuring drag-and-drop functio
 - **Local Storage**: Your boards and cards are persisted in your browser.
 - **Responsive Design**: Works on desktops, tablets, and mobile devices.
 - **Card Management**: Add, edit, and delete cards with priority levels and labels.
-- **Search Function**: Display cards if the keyword matches the title, description, tag.
+- **Search Function**: Filter cards with keyword matches the title, description, and label.
 
 ## Screenshots
 <img width="800" height="302" alt="image" src="https://github.com/user-attachments/assets/5e0fd240-2aa4-45d6-8ff4-bd9ecbaecf18" />
