@@ -47,6 +47,15 @@
     box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
+.drag-card-ghost {
+    opacity: 0.5;
+    background-color: rgb(219 234 250);
+}
+
+.dark .drag-card-ghost {
+    background-color: rgba(30 58 138, 0.3);
+}
+
 /* Theme transition */
 body {
     transition: background-color 0.3s ease, color 0.3s ease;
