@@ -11,7 +11,7 @@ export const UI = {
     themeDarkIcon: document.getElementById('theme-toggle-dark-icon'),
     themeLightIcon: document.getElementById('theme-toggle-light-icon'),
     aboutModal: document.getElementById('about-modal'),
-    closeAboutModal: document.getElementById('close-about-modal'),
+    closeAboutModalBtn: document.getElementById('close-about-modal'),
     aboutOkBtn: document.getElementById('about-ok-btn'),
     cardModal: document.getElementById('card-modal'),
     modalTitle: document.getElementById('modal-title'),
