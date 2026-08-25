@@ -1,9 +1,15 @@
 export const UI = {
     // DOM Elements
     boardContainer: document.getElementById('board-container'),
-    themeToggle: document.getElementById('theme-toggle'),
+    menuToggle: document.getElementById('menu-toggle'),
+    menuDropdown: document.getElementById('menu-dropdown'),
+    themeToggleMenu: document.getElementById('theme-toggle-menu'),
+    aboutMenu: document.getElementById('about-menu'),
     themeDarkIcon: document.getElementById('theme-toggle-dark-icon'),
     themeLightIcon: document.getElementById('theme-toggle-light-icon'),
+    aboutModal: document.getElementById('about-modal'),
+    closeAboutModal: document.getElementById('close-about-modal'),
+    aboutOkBtn: document.getElementById('about-ok-btn'),
     cardModal: document.getElementById('card-modal'),
     modalTitle: document.getElementById('modal-title'),
     cardForm: document.getElementById('card-form'),
@@ -173,6 +179,26 @@ export const UI = {
         setTimeout(() => {
             this.confirmModal.classList.add('hidden');
             this.confirmModal.classList.remove('flex');
+        }, 200);
+    },
+
+    openAboutModal() {
+        this.aboutModal.classList.remove('hidden');
+        this.aboutModal.classList.add('flex');
+        setTimeout(() => {
+            this.aboutModal.querySelector('.relative').classList.remove('scale-95', 'opacity-0');
+            this.aboutModal.querySelector('.relative').classList.add('scale-100', 'opacity-100');
+        }, 10);
+    },
+
+    closeAboutModal() {
+        const modalContent = this.aboutModal.querySelector('.relative');
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+            this.aboutModal.classList.add('hidden');
+            this.aboutModal.classList.remove('flex');
         }, 200);
     }
 }

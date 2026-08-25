@@ -17,13 +17,37 @@ class KanbanApp {
     }
 
     setupEventListeners() {
-        // Theme Toggle
-        UI.themeToggle.onclick = () => {
+        // Menu Toggle
+        UI.menuToggle.onclick = (e) => {
+            e.stopPropagation();
+            UI.menuDropdown.classList.toggle('hidden');
+        };
+
+        // Theme Toggle from Menu
+        UI.themeToggleMenu.onclick = (e) => {
+            e.stopPropagation();
             const newTheme = this.state.settings.theme === 'light' ? 'dark' : 'light';
             this.state.settings.theme = newTheme;
             UI.setTheme(newTheme);
             this.save();
+            UI.menuDropdown.classList.add('hidden');
         };
+
+        // About Menu
+        UI.aboutMenu.onclick = (e) => {
+            e.stopPropagation();
+            UI.openAboutModal();
+            UI.menuDropdown.classList.add('hidden');
+        };
+
+        // Close menu when clicking outside
+        document.addEventListener('click', () => {
+            UI.menuDropdown.classList.add('hidden');
+        });
+
+        // About Modal Controls
+        UI.closeAboutModal.onclick = () => UI.closeAboutModal();
+        UI.aboutOkBtn.onclick = () => UI.closeAboutModal();
 
         // Modal Controls
         document.getElementById('close-modal').onclick = () => UI.closeModal();
