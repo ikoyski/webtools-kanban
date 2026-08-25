@@ -46,7 +46,7 @@ class KanbanApp {
         });
 
         // About Modal Controls
-        UI.closeAboutModal.onclick = () => UI.closeAboutModal();
+        UI.closeAboutModalBtn.onclick = () => UI.closeAboutModal();
         UI.aboutOkBtn.onclick = () => UI.closeAboutModal();
 
         // Modal Controls
