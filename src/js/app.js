@@ -81,6 +81,11 @@ class KanbanApp {
     }
 
     initSortables() {
+        if (typeof Sortable === 'undefined') {
+            console.error('SortableJS is not loaded. Please check the CDN link in index.html');
+            return;
+        }
+
         Object.values(this.state.columns).forEach(column => {
             const el = document.querySelector(`[data-column-id="${column.id}"]`);
             if (!el) return;
