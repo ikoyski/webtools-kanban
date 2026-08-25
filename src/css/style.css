@@ -1,0 +1,56 @@
+/* Custom scrollbar for the board */
+#board-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+#board-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#board-container::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.3);
+    border-radius: 10px;
+}
+
+#board-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.5);
+}
+
+/* Custom scrollbar for column card lists */
+.card-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.card-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.card-list::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.2);
+    border-radius: 10px;
+}
+
+/* Animations for modals */
+.modal-enter {
+    transform: scale(0.95);
+    opacity: 0;
+}
+
+.modal-enter-active {
+    transform: scale(1);
+    opacity: 1;
+    transition: all 0.2s ease-out;
+}
+
+/* Theme transition */
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Line clamp for descriptions */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
