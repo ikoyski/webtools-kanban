@@ -97,6 +97,7 @@ class KanbanApp {
             console.log(`Creating sortable for column: ${column.id}`);
             Sortable.create(el, {
                 group: 'kanban',
+                handle: '.drag-handle',
                 animation: 150,
                 ghostClass: 'opacity-50 bg-blue-100 dark:bg-blue-900/30',
                 dragClass: 'rotate-2 shadow-xl',

@@ -64,8 +64,15 @@ export const UI = {
 
         return `
             <div class="card group bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border-l-4 ${priorityClass} hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer relative" data-card-id="${card.id}">
-                <div class="flex flex-wrap gap-1 mb-2">
-                    ${labelsHTML}
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex flex-wrap gap-1">
+                        ${labelsHTML}
+                    </div>
+                    <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-slate-300 dark:text-slate-600 hover:text-slate-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                        </svg>
+                    </div>
                 </div>
                 <h4 class="font-semibold text-sm mb-1 text-slate-800 dark:text-slate-100">${card.title}</h4>
                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">${card.description || ''}</p>
