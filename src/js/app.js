@@ -101,7 +101,7 @@ class KanbanApp {
                 handle: '.drag-handle',
                 animation: 150,
                 ghostClass: 'opacity-50 bg-blue-100 dark:bg-blue-900/30',
-                dragClass: 'rotate-2 shadow-xl',
+                dragClass: 'drag-card-active',
                 onStart: (evt) => console.log('Drag started!', evt),
                 onUpdate: (evt) => console.log('Card moved!', evt),
                 onEnd: (evt) => {
