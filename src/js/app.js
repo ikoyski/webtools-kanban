@@ -40,6 +40,29 @@ class KanbanApp {
             UI.menuDropdown.classList.add('hidden');
         };
 
+        // Export Menu
+        UI.exportMenu.onclick = (e) => {
+            e.stopPropagation();
+            this.exportData();
+            UI.menuDropdown.classList.add('hidden');
+        };
+
+        // Import Menu
+        UI.importMenu.onclick = (e) => {
+            e.stopPropagation();
+            UI.importFile.click();
+            UI.menuDropdown.classList.add('hidden');
+        };
+
+        // Import File Change
+        UI.importFile.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                this.importData(file);
+            }
+            UI.importFile.value = ''; // Reset input
+        };
+
         // Close menu when clicking outside
         document.addEventListener('click', () => {
             UI.menuDropdown.classList.add('hidden');
@@ -222,6 +245,37 @@ class KanbanApp {
 
             cardEl.classList.toggle('hidden', !matches);
         });
+    }
+
+    exportData() {
+        const dataStr = JSON.stringify(this.state, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+        const exportFileDefaultName = 'kanban-data.json';
+
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    }
+
+    async importData(file) {
+        try {
+            const text = await file.text();
+            const importedState = JSON.parse(text);
+
+            if (!importedState.columns || !importedState.cards) {
+                throw new Error('Invalid data format');
+            }
+
+            this.state = importedState;
+            this.save();
+            UI.renderBoard(this.state);
+            this.initSortables();
+            alert('Data imported successfully!');
+        } catch (e) {
+            console.error('Import error:', e);
+            alert('Failed to import data. Please ensure you use a valid JSON file.');
+        }
     }
 
     save() {
