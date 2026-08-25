@@ -88,7 +88,7 @@ export const UI = {
                             </div>
                         ` : ''}
                     </div>
-                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div class="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <button class="edit-btn p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400 hover:text-primary-600 transition-colors" title="Edit">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.538 3.538M9 11l3 3m-3-3l3-3m-3 3l-3-3m3 3l3 3m-6 4h4" />
