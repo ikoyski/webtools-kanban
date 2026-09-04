@@ -18,6 +18,14 @@ export const UI = {
     modalTitle: document.getElementById('modal-title'),
     cardForm: document.getElementById('card-form'),
     confirmModal: document.getElementById('confirm-modal'),
+    deleteColumnModal: document.getElementById('delete-column-modal'),
+    deleteColTitle: document.getElementById('delete-col-title'),
+    deleteColMessage: document.getElementById('delete-col-message'),
+    deleteColTransferSection: document.getElementById('delete-col-transfer-section'),
+    deleteColDestination: document.getElementById('delete-col-destination'),
+    deleteColConfirm: document.getElementById('delete-col-confirm'),
+    deleteColCancel: document.getElementById('delete-col-cancel'),
+    closeDeleteColModal: document.getElementById('close-delete-col-modal'),
 
     renderBoard(state) {
         this.boardContainer.innerHTML = '';
@@ -39,11 +47,18 @@ export const UI = {
             <div class="flex items-center justify-between mb-4 px-1">
                 <div class="flex items-center gap-2">
                     <h3 class="font-bold text-slate-700 dark:text-slate-200">${column.title}</h3>
-                    <button class="rename-col-btn text-slate-400 hover:text-primary-600 transition-colors opacity-0 group-hover:opacity-100" title="Rename Column">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.538 3.538M9 11l3 3m-3-3l3-3m-3 3l-3-3m3 3l3 3m-6 4h4" />
-                        </svg>
-                    </button>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button class="rename-col-btn text-slate-400 hover:text-primary-600 transition-colors" title="Rename Column">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.538 3.538M9 11l3 3m-3-3l3-3m-3 3l-3-3m3 3l3 3m-6 4h4" />
+                            </svg>
+                        </button>
+                        <button class="delete-col-btn text-slate-400 hover:text-red-600 transition-colors" title="Delete Column">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
                     <span class="text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">${cardCount}</span>
                 </div>
                 <button class="text-slate-400 hover:text-primary-600 transition-colors" title="Add Card">
@@ -65,6 +80,11 @@ export const UI = {
         // Attach listener to the "Rename Column" button
         div.querySelector('.rename-col-btn').onclick = () => {
             window.dispatchEvent(new CustomEvent('rename-column', { detail: { columnId: column.id } }));
+        };
+
+        // Attach listener to the "Delete Column" button
+        div.querySelector('.delete-col-btn').onclick = () => {
+            window.dispatchEvent(new CustomEvent('delete-column', { detail: { columnId: column.id } }));
         };
 
         return div;
@@ -213,6 +233,43 @@ export const UI = {
         setTimeout(() => {
             this.aboutModal.classList.add('hidden');
             this.aboutModal.classList.remove('flex');
+        }, 200);
+    },
+
+    openDeleteColumnModal(columnId, title, hasCards, otherColumns) {
+        this.deleteColumnModal.classList.remove('hidden');
+        this.deleteColumnModal.classList.add('flex');
+        this.deleteColTitle.textContent = `Delete Column: ${title}`;
+        this.deleteColMessage.textContent = hasCards
+            ? `This column contains cards. You must transfer them to another column before deleting.`
+            : `Are you sure you want to delete the column "${title}"? This action cannot be undone.`;
+
+        this.deleteColTransferSection.classList.toggle('hidden', !hasCards);
+
+        if (hasCards) {
+            this.deleteColDestination.innerHTML = '';
+            otherColumns.forEach(col => {
+                const option = document.createElement('option');
+                option.value = col.id;
+                option.textContent = col.title;
+                this.deleteColDestination.appendChild(option);
+            });
+        }
+
+        setTimeout(() => {
+            this.deleteColumnModal.querySelector('.relative').classList.remove('scale-95', 'opacity-0');
+            this.deleteColumnModal.querySelector('.relative').classList.add('scale-100', 'opacity-100');
+        }, 10);
+    },
+
+    closeDeleteColumnModal() {
+        const modalContent = this.deleteColumnModal.querySelector('.relative');
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+            this.deleteColumnModal.classList.add('hidden');
+            this.deleteColumnModal.classList.remove('flex');
         }, 200);
     }
 }

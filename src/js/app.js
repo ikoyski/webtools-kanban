@@ -156,6 +156,52 @@ class KanbanApp {
                 this.initSortables();
             }
         });
+
+        // Delete Column handler
+        window.addEventListener('delete-column', (e) => {
+            const { columnId } = e.detail;
+            const column = this.state.columns[columnId];
+            const hasCards = column.cardIds.length > 0;
+            const otherColumns = Object.values(this.state.columns).filter(col => col.id !== columnId);
+
+            this.pendingDeleteColId = columnId;
+            UI.openDeleteColumnModal(columnId, column.title, hasCards, otherColumns);
+        });
+
+        // Confirm Delete Column handler
+        UI.deleteColConfirm.onclick = () => {
+            const columnId = this.pendingDeleteColId;
+            if (!columnId) return;
+
+            const column = this.state.columns[columnId];
+            const destinationId = UI.deleteColDestination.value;
+
+            if (column.cardIds.length > 0) {
+                if (!destinationId) {
+                    alert('Please select a destination column for the cards.');
+                    return;
+                }
+                const destCol = this.state.columns[destinationId];
+                destCol.cardIds.push(...column.cardIds);
+            }
+
+            delete this.state.columns[columnId];
+            this.save();
+            UI.renderBoard(this.state);
+            this.initSortables();
+            UI.closeDeleteColumnModal();
+            this.pendingDeleteColId = null;
+        };
+
+        UI.deleteColCancel.onclick = () => {
+            UI.closeDeleteColumnModal();
+            this.pendingDeleteColId = null;
+        };
+
+        UI.closeDeleteColModal.onclick = () => {
+            UI.closeDeleteColumnModal();
+            this.pendingDeleteColId = null;
+        };
     }
 
     initSortables() {
