@@ -63,6 +63,24 @@ class KanbanApp {
             UI.importFile.value = ''; // Reset input
         };
 
+        // Add Column handler
+        UI.addColumnMenu.onclick = (e) => {
+            e.stopPropagation();
+            const newName = prompt('Enter new column name:');
+            if (newName !== null && newName.trim() !== '') {
+                const newId = 'col-' + Date.now();
+                this.state.columns[newId] = {
+                    id: newId,
+                    title: newName.trim(),
+                    cardIds: []
+                };
+                this.save();
+                UI.renderBoard(this.state);
+                this.initSortables();
+            }
+            UI.menuDropdown.classList.add('hidden');
+        };
+
         // Close menu when clicking outside
         document.addEventListener('click', () => {
             UI.menuDropdown.classList.add('hidden');
