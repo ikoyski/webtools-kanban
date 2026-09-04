@@ -47,7 +47,7 @@ export const UI = {
             <div class="flex items-center justify-between mb-4 px-1">
                 <div class="flex items-center gap-2">
                     <h3 class="font-bold text-slate-700 dark:text-slate-200">${column.title}</h3>
-                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div class="flex gap-1 opacity-60 hover:opacity-100 transition-opacity">
                         <button class="rename-col-btn text-slate-400 hover:text-primary-600 transition-colors" title="Rename Column">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.538 3.538M9 11l3 3m-3-3l3-3m-3 3l-3-3m3 3l3 3m-6 4h4" />
@@ -61,7 +61,7 @@ export const UI = {
                     </div>
                     <span class="text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">${cardCount}</span>
                 </div>
-                <button class="text-slate-400 hover:text-primary-600 transition-colors" title="Add Card">
+                <button class="add-card-btn text-slate-400 hover:text-primary-600 transition-colors" title="Add Card">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                     </svg>
@@ -73,7 +73,7 @@ export const UI = {
         `;
 
         // Attach listener to the "Add Card" button
-        div.querySelector('button').onclick = () => {
+        div.querySelector('.add-card-btn').onclick = () => {
             window.dispatchEvent(new CustomEvent('open-card-modal', { detail: { columnId: column.id } }));
         };
 
