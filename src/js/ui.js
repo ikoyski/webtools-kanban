@@ -29,7 +29,7 @@ export const UI = {
 
     createColumnElement(column, cards) {
         const div = document.createElement('div');
-        div.className = 'flex-shrink-0 w-[300px] flex flex-col max-h-full bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700';
+        div.className = 'group flex-shrink-0 w-[300px] flex flex-col max-h-full bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700';
         div.id = `col-${column.id}`;
 
         const cardCount = column.cardIds.length;
@@ -38,6 +38,11 @@ export const UI = {
             <div class="flex items-center justify-between mb-4 px-1">
                 <div class="flex items-center gap-2">
                     <h3 class="font-bold text-slate-700 dark:text-slate-200">${column.title}</h3>
+                    <button class="rename-col-btn text-slate-400 hover:text-primary-600 transition-colors opacity-0 group-hover:opacity-100" title="Rename Column">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.538 3.538M9 11l3 3m-3-3l3-3m-3 3l-3-3m3 3l3 3m-6 4h4" />
+                        </svg>
+                    </button>
                     <span class="text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">${cardCount}</span>
                 </div>
                 <button class="text-slate-400 hover:text-primary-600 transition-colors" title="Add Card">
@@ -54,6 +59,11 @@ export const UI = {
         // Attach listener to the "Add Card" button
         div.querySelector('button').onclick = () => {
             window.dispatchEvent(new CustomEvent('open-card-modal', { detail: { columnId: column.id } }));
+        };
+
+        // Attach listener to the "Rename Column" button
+        div.querySelector('.rename-col-btn').onclick = () => {
+            window.dispatchEvent(new CustomEvent('rename-column', { detail: { columnId: column.id } }));
         };
 
         return div;

@@ -125,6 +125,19 @@ class KanbanApp {
                 UI.closeConfirm();
             }
         };
+
+        // Rename Column handler
+        window.addEventListener('rename-column', (e) => {
+            const { columnId } = e.detail;
+            const currentTitle = this.state.columns[columnId].title;
+            const newTitle = prompt('Enter new column name:', currentTitle);
+            if (newTitle !== null && newTitle.trim() !== '') {
+                this.state.columns[columnId].title = newTitle.trim();
+                this.save();
+                UI.renderBoard(this.state);
+                this.initSortables();
+            }
+        });
     }
 
     initSortables() {
