@@ -59,7 +59,7 @@ export const UI = {
                             </svg>
                         </button>
                     </div>
-                    <span class="text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">${cardCount}</span>
+                    <span class="column-card-count text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">${cardCount}</span>
                 </div>
                 <button class="add-card-btn text-slate-400 hover:text-primary-600 transition-colors" title="Add Card">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -157,6 +157,18 @@ export const UI = {
             this.themeLightIcon.classList.add('hidden');
             this.themeDarkIcon.classList.remove('hidden');
         }
+    },
+
+    updateCardCounts(state) {
+        Object.values(state.columns).forEach(column => {
+            const colEl = document.getElementById(`col-${column.id}`);
+            if (colEl) {
+                const countEl = colEl.querySelector('.column-card-count');
+                if (countEl) {
+                    countEl.textContent = column.cardIds.length;
+                }
+            }
+        });
     },
 
     openModal(title, card = null, columnId = null) {
