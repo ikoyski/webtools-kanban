@@ -103,7 +103,7 @@ export const UI = {
         const labelsHTML = card.labels.map(l => `<span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400">${l}</span>`).join(' ');
 
         return `
-            <div class="card group bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border-l-4 ${priorityClass} hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer relative" data-card-id="${card.id}">
+            <div class="card group bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border-l-4 ${priorityClass} cursor-pointer relative" data-card-id="${card.id}">
                 <div class="flex items-center justify-between mb-2">
                     <div class="flex flex-wrap gap-1">
                         ${labelsHTML}
