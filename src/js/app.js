@@ -8,7 +8,15 @@ class KanbanApp {
 
     async start() {
         try {
-            this.state = await ApiClient.getBoard();
+            const board = await ApiClient.getBoard();
+
+            // The API returns a board object { id, name, columns, cards, settings }
+            // but the UI expects the state object structure { columns, cards, settings }
+            this.state = {
+                columns: board.columns || {},
+                cards: board.cards || {},
+                settings: board.settings || { theme: 'light' }
+            };
 
             // Load theme from localStorage if available
             const savedTheme = localStorage.getItem('kanban-theme');
