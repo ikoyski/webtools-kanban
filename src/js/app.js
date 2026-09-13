@@ -247,8 +247,7 @@ class KanbanApp {
         this.state.columns[destColId].cardIds.splice(newIndex, 0, cardId);
 
         this.save();
-        UI.renderBoard(this.state);
-        this.initSortables(); // Re-init to ensure event listeners on new DOM
+        UI.updateCardCounts(this.state);
     }
 
     handleFormSubmit() {
