@@ -1,12 +1,12 @@
 # WebTools Kanban
 
-A modern, responsive Kanban board implementation featuring drag-and-drop functionality, dark mode support, and local storage persistence.
+A modern, responsive Kanban board implementation featuring drag-and-drop functionality, dark mode support, and REST API persistence.
 
 ## Features
 
 - **Drag and Drop**: Easily move cards between columns using SortableJS.
 - **Dark Mode**: Seamlessly switch between light and dark themes.
-- **Local Storage**: Your boards and cards are persisted in your browser.
+- **REST API**: Your boards and cards are persisted in a PostgreSQL database via a REST API.
 - **Responsive Design**: Works on desktops, tablets, and mobile devices.
 - **Card Management**: Add, edit, and delete cards with priority levels, due dates, and custom labels.
 - **Column Management**: Create new columns, rename existing ones, and delete columns with an integrated card transfer mechanism to prevent data loss.
@@ -26,7 +26,7 @@ A modern, responsive Kanban board implementation featuring drag-and-drop functio
     │   └── style.css    # Custom styles complementing Tailwind CSS
     └── js/
         ├── app.js       # Main application controller (KanbanApp class)
-        ├── storage.js    # LocalStorage persistence layer (StorageManager class)
+        ├── api.js         # REST API client for data persistence (ApiClient class)
         └── ui.js        # UI rendering and DOM manipulation (UI object)
 ```
 
@@ -46,7 +46,7 @@ No installation or build process is required. Simply open `index.html` in any mo
 This is a vanilla JavaScript project. Since it uses ES6 modules and CDN-hosted dependencies, it can be run directly from the filesystem or a simple local server.
 
 - **Styling**: All layouts are built with Tailwind CSS.
-- **State**: The application state is maintained as a central object and synchronized with `localStorage`.
+- **State**: The application state is maintained as a central object and synchronized with a REST API.
 - **Interactions**: UI events are handled via a mix of direct listeners and custom browser events.
 
 ## Screenshots
