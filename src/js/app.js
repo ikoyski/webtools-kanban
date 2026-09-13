@@ -1,10 +1,26 @@
-import { StorageManager } from './storage.js';
+import ApiClient from './api.js';
 import { UI } from './ui.js';
 
 class KanbanApp {
     constructor() {
-        this.state = StorageManager.loadState();
-        this.init();
+        this.state = null;
+    }
+
+    async start() {
+        try {
+            this.state = await ApiClient.getBoard();
+
+            // Load theme from localStorage if available
+            const savedTheme = localStorage.getItem('kanban-theme');
+            if (savedTheme) {
+                this.state.settings.theme = savedTheme;
+            }
+
+            this.init();
+        } catch (error) {
+            console.error('Failed to load board:', error);
+            alert('Failed to load board from server. Please refresh the page.');
+        }
     }
 
     init() {
@@ -29,7 +45,7 @@ class KanbanApp {
             const newTheme = this.state.settings.theme === 'light' ? 'dark' : 'light';
             this.state.settings.theme = newTheme;
             UI.setTheme(newTheme);
-            this.save();
+            localStorage.setItem('kanban-theme', newTheme);
             UI.menuDropdown.classList.add('hidden');
         };
 
@@ -64,19 +80,18 @@ class KanbanApp {
         };
 
         // Add Column handler
-        UI.addColumnMenu.onclick = (e) => {
+        UI.addColumnMenu.onclick = async (e) => {
             e.stopPropagation();
             const newName = prompt('Enter new column name:');
             if (newName !== null && newName.trim() !== '') {
-                const newId = 'col-' + Date.now();
-                this.state.columns[newId] = {
-                    id: newId,
-                    title: newName.trim(),
-                    cardIds: []
-                };
-                this.save();
-                UI.renderBoard(this.state);
-                this.initSortables();
+                try {
+                    const newColumn = await ApiClient.createColumn(newName.trim());
+                    this.state.columns[newColumn.id] = newColumn;
+                    UI.renderBoard(this.state);
+                    this.initSortables();
+                } catch (error) {
+                    alert('Failed to create column: ' + error.message);
+                }
             }
             UI.menuDropdown.classList.add('hidden');
         };
@@ -145,15 +160,28 @@ class KanbanApp {
         };
 
         // Rename Column handler
-        window.addEventListener('rename-column', (e) => {
+        window.addEventListener('rename-column', async (e) => {
             const { columnId } = e.detail;
             const currentTitle = this.state.columns[columnId].title;
             const newTitle = prompt('Enter new column name:', currentTitle);
             if (newTitle !== null && newTitle.trim() !== '') {
-                this.state.columns[columnId].title = newTitle.trim();
-                this.save();
+                const trimmedTitle = newTitle.trim();
+                const oldTitle = currentTitle;
+
+                // Optimistic update
+                this.state.columns[columnId].title = trimmedTitle;
                 UI.renderBoard(this.state);
                 this.initSortables();
+
+                try {
+                    await ApiClient.renameColumn(columnId, trimmedTitle);
+                } catch (error) {
+                    // Rollback
+                    this.state.columns[columnId].title = oldTitle;
+                    UI.renderBoard(this.state);
+                    this.initSortables();
+                    alert('Failed to rename column: ' + error.message);
+                }
             }
         });
 
@@ -169,7 +197,7 @@ class KanbanApp {
         });
 
         // Confirm Delete Column handler
-        UI.deleteColConfirm.onclick = () => {
+        UI.deleteColConfirm.onclick = async () => {
             const columnId = this.pendingDeleteColId;
             if (!columnId) return;
 
@@ -185,12 +213,28 @@ class KanbanApp {
                 destCol.cardIds.push(...column.cardIds);
             }
 
+            const oldColumns = { ...this.state.columns };
             delete this.state.columns[columnId];
-            this.save();
+
             UI.renderBoard(this.state);
             this.initSortables();
             UI.closeDeleteColumnModal();
             this.pendingDeleteColId = null;
+
+            try {
+                // Move cards via API if necessary
+                if (column.cardIds.length > 0 && destinationId) {
+                    await Promise.all(column.cardIds.map((cardId, index) =>
+                        ApiClient.moveCard(cardId, columnId, destinationId, this.state.columns[destinationId].cardIds.length - 1)
+                    ));
+                }
+                await ApiClient.deleteColumn(columnId);
+            } catch (error) {
+                this.state.columns = oldColumns;
+                UI.renderBoard(this.state);
+                this.initSortables();
+                alert('Failed to delete column: ' + error.message);
+            }
         };
 
         UI.deleteColCancel.onclick = () => {
@@ -237,20 +281,28 @@ class KanbanApp {
         console.log('--- Sortable Init End ---');
     }
 
-    handleSortEnd(evt) {
+    async handleSortEnd(evt) {
         const { oldIndex, newIndex } = evt;
         const sourceColId = evt.from.dataset.columnId;
         const destColId = evt.to.dataset.columnId;
 
-        // Update state
+        // Optimistic Update
+        const oldState = JSON.parse(JSON.stringify(this.state));
         const cardId = this.state.columns[sourceColId].cardIds.splice(oldIndex, 1)[0];
         this.state.columns[destColId].cardIds.splice(newIndex, 0, cardId);
-
-        this.save();
         UI.updateCardCounts(this.state);
+
+        try {
+            await ApiClient.moveCard(cardId, sourceColId, destColId, newIndex);
+        } catch (error) {
+            this.state = oldState;
+            UI.renderBoard(this.state);
+            this.initSortables();
+            alert('Failed to move card: ' + error.message);
+        }
     }
 
-    handleFormSubmit() {
+    async handleFormSubmit() {
         const cardId = document.getElementById('card-id').value;
         const columnId = document.getElementById('column-id').value;
 
@@ -264,49 +316,87 @@ class KanbanApp {
 
         if (cardId) {
             // Edit existing
-            const card = this.state.cards[cardId];
-            this.state.cards[cardId] = { ...card, ...cardData };
+            const oldCard = { ...this.state.cards[cardId] };
+            this.state.cards[cardId] = { ...oldCard, ...cardData };
+            UI.renderBoard(this.state);
+            this.initSortables();
+            UI.closeModal();
+
+            try {
+                await ApiClient.updateCard(cardId, cardData);
+            } catch (error) {
+                this.state.cards[cardId] = oldCard;
+                UI.renderBoard(this.state);
+                this.initSortables();
+                alert('Failed to update card: ' + error.message);
+            }
         } else {
             // Create new
-            const newId = 'card-' + Date.now();
+            const tempId = 'card-' + Date.now();
             const newCard = {
-                id: newId,
+                id: tempId,
                 ...cardData,
                 createdAt: new Date().toISOString(),
             };
-            this.state.cards[newId] = newCard;
-
-            // Add to column
+            this.state.cards[tempId] = newCard;
             if (columnId && this.state.columns[columnId]) {
-                this.state.columns[columnId].cardIds.push(newId);
+                this.state.columns[columnId].cardIds.push(tempId);
             } else {
-                // Default to todo
-                this.state.columns['todo'].cardIds.push(newId);
+                this.state.columns['todo'].cardIds.push(tempId);
+            }
+            UI.renderBoard(this.state);
+            this.initSortables();
+            UI.closeModal();
+
+            try {
+                const createdCard = await ApiClient.createCard(columnId || 'todo', cardData);
+                // Replace tempId with server ID
+                delete this.state.cards[tempId];
+                this.state.cards[createdCard.id] = createdCard;
+
+                // Update column cardIds
+                Object.values(this.state.columns).forEach(col => {
+                    col.cardIds = col.cardIds.map(id => id === tempId ? createdCard.id : id);
+                });
+
+                UI.renderBoard(this.state);
+                this.initSortables();
+            } catch (error) {
+                delete this.state.cards[tempId];
+                Object.values(this.state.columns).forEach(col => {
+                    col.cardIds = col.cardIds.filter(id => id !== tempId);
+                });
+                UI.renderBoard(this.state);
+                this.initSortables();
+                alert('Failed to create card: ' + error.message);
             }
         }
-
-        this.save();
-        UI.closeModal();
-        UI.renderBoard(this.state);
-        this.initSortables();
     }
 
-    handleDelete() {
+    async handleDelete() {
         const cardId = this.pendingDeleteId;
         if (!cardId) return;
 
-        // Remove from all columns
+        const oldState = JSON.parse(JSON.stringify(this.state));
+
+        // Optimistic Remove
         Object.values(this.state.columns).forEach(col => {
             col.cardIds = col.cardIds.filter(id => id !== cardId);
         });
-
-        // Remove from cards object
         delete this.state.cards[cardId];
 
-        this.save();
-        UI.closeConfirm();
         UI.renderBoard(this.state);
         this.initSortables();
+        UI.closeConfirm();
+
+        try {
+            await ApiClient.deleteCard(cardId);
+        } catch (error) {
+            this.state = oldState;
+            UI.renderBoard(this.state);
+            this.initSortables();
+            alert('Failed to delete card: ' + error.message);
+        }
         this.pendingDeleteId = null;
     }
 
@@ -323,15 +413,20 @@ class KanbanApp {
         });
     }
 
-    exportData() {
-        const dataStr = JSON.stringify(this.state, null, 2);
-        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-        const exportFileDefaultName = 'kanban-data.json';
+    async exportData() {
+        try {
+            const boardData = await ApiClient.exportBoard();
+            const dataStr = JSON.stringify(boardData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            const exportFileDefaultName = 'kanban-data.json';
 
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.click();
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        } catch (error) {
+            alert('Failed to export data: ' + error.message);
+        }
     }
 
     async importData(file) {
@@ -343,23 +438,20 @@ class KanbanApp {
                 throw new Error('Invalid data format');
             }
 
-            this.state = importedState;
-            this.save();
+            const response = await ApiClient.importBoard(importedState);
+            this.state = response;
             UI.renderBoard(this.state);
             this.initSortables();
             alert('Data imported successfully!');
         } catch (e) {
             console.error('Import error:', e);
-            alert('Failed to import data. Please ensure you use a valid JSON file.');
+            alert('Failed to import data: ' + e.message);
         }
-    }
-
-    save() {
-        StorageManager.saveState(this.state);
     }
 }
 
 // Start the app
-document.addEventListener('DOMContentLoaded', () => {
-    new KanbanApp();
+document.addEventListener('DOMContentLoaded', async () => {
+    const app = new KanbanApp();
+    await app.start();
 });
