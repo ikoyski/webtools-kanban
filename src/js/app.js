@@ -12,9 +12,34 @@ class KanbanApp {
 
             // The API returns a board object { id, name, columns, cards, settings }
             // but the UI expects the state object structure { columns, cards, settings }
+            const columns = {};
+            if (Array.isArray(board.columns)) {
+                board.columns.forEach(col => {
+                    columns[col.id] = {
+                        ...col,
+                        cardIds: Array.isArray(col.cards) ? col.cards.map(c => typeof c === 'string' ? c : c.id) : (col.cardIds || [])
+                    };
+                });
+            } else {
+                const cols = board.columns || {};
+                Object.values(cols).forEach(col => {
+                    col.cardIds = Array.isArray(col.cards) ? col.cards.map(c => typeof c === 'string' ? c : c.id) : (col.cardIds || []);
+                });
+                Object.assign(columns, cols);
+            }
+
+            const cards = {};
+            if (Array.isArray(board.cards)) {
+                board.cards.forEach(card => {
+                    cards[card.id] = card;
+                });
+            } else {
+                Object.assign(cards, board.cards || {});
+            }
+
             this.state = {
-                columns: board.columns || {},
-                cards: board.cards || {},
+                columns,
+                cards,
                 settings: board.settings || { theme: 'light' }
             };
 
