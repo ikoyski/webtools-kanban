@@ -6,42 +6,45 @@ class KanbanApp {
         this.state = null;
     }
 
+    normalizeColumn(col) {
+        return {
+            ...col,
+            cardIds: Array.isArray(col.cards) ? col.cards.map(c => typeof c === 'string' ? c : c.id) : (col.cardIds || [])
+        };
+    }
+
+    normalizeBoard(board) {
+        const columns = {};
+        if (Array.isArray(board.columns)) {
+            board.columns.forEach(col => {
+                columns[col.id] = this.normalizeColumn(col);
+            });
+        } else if (board.columns) {
+            Object.values(board.columns).forEach(col => {
+                columns[col.id] = this.normalizeColumn(col);
+            });
+        }
+
+        const cards = {};
+        if (Array.isArray(board.cards)) {
+            board.cards.forEach(card => {
+                cards[card.id] = card;
+            });
+        } else if (board.cards) {
+            Object.assign(cards, board.cards);
+        }
+
+        return {
+            columns,
+            cards,
+            settings: board.settings || { theme: 'light' }
+        };
+    }
+
     async start() {
         try {
             const board = await ApiClient.getBoard();
-
-            // The API returns a board object { id, name, columns, cards, settings }
-            // but the UI expects the state object structure { columns, cards, settings }
-            const columns = {};
-            if (Array.isArray(board.columns)) {
-                board.columns.forEach(col => {
-                    columns[col.id] = {
-                        ...col,
-                        cardIds: Array.isArray(col.cards) ? col.cards.map(c => typeof c === 'string' ? c : c.id) : (col.cardIds || [])
-                    };
-                });
-            } else {
-                const cols = board.columns || {};
-                Object.values(cols).forEach(col => {
-                    col.cardIds = Array.isArray(col.cards) ? col.cards.map(c => typeof c === 'string' ? c : c.id) : (col.cardIds || []);
-                });
-                Object.assign(columns, cols);
-            }
-
-            const cards = {};
-            if (Array.isArray(board.cards)) {
-                board.cards.forEach(card => {
-                    cards[card.id] = card;
-                });
-            } else {
-                Object.assign(cards, board.cards || {});
-            }
-
-            this.state = {
-                columns,
-                cards,
-                settings: board.settings || { theme: 'light' }
-            };
+            this.state = this.normalizeBoard(board);
 
             // Load theme from localStorage if available
             const savedTheme = localStorage.getItem('kanban-theme');
@@ -119,7 +122,7 @@ class KanbanApp {
             if (newName !== null && newName.trim() !== '') {
                 try {
                     const newColumn = await ApiClient.createColumn(newName.trim());
-                    this.state.columns[newColumn.id] = newColumn;
+                    this.state.columns[newColumn.id] = this.normalizeColumn(newColumn);
                     UI.renderBoard(this.state);
                     this.initSortables();
                 } catch (error) {
@@ -472,7 +475,7 @@ class KanbanApp {
             }
 
             const response = await ApiClient.importBoard(importedState);
-            this.state = response;
+            this.state = this.normalizeBoard(response);
             UI.renderBoard(this.state);
             this.initSortables();
             alert('Data imported successfully!');
