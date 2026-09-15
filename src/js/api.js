@@ -32,10 +32,13 @@ class ApiClient {
     return this.request('/v1/board');
   }
 
-  static async createColumn(title) {
+  static async createColumn(title, boardId) {
     return this.request('/v1/columns', {
       method: 'POST',
-      body: JSON.stringify({ title }),
+      body: JSON.stringify({ 
+        title,
+        boardId 
+      }),
     });
   }
 

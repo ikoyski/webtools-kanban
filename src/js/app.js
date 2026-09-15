@@ -85,7 +85,7 @@ class KanbanApp {
             const newName = prompt('Enter new column name:');
             if (newName !== null && newName.trim() !== '') {
                 try {
-                    const newColumn = await ApiClient.createColumn(newName.trim());
+                    const newColumn = await ApiClient.createColumn(newName.trim(), this.state.id);
                     this.state.columns[newColumn.id] = newColumn;
                     UI.renderBoard(this.state);
                     this.initSortables();
