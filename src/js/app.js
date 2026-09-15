@@ -225,7 +225,7 @@ class KanbanApp {
                 // Move cards via API if necessary
                 if (column.cardIds.length > 0 && destinationId) {
                     await Promise.all(column.cardIds.map((cardId, index) =>
-                        ApiClient.moveCard(cardId, columnId, destinationId, this.state.columns[destinationId].cardIds.length - 1)
+                        ApiClient.moveCard(cardId, destinationId, this.state.columns[destinationId].cardIds.length - 1)
                     ));
                 }
                 await ApiClient.deleteColumn(columnId);
