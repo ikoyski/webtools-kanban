@@ -16,12 +16,28 @@ class ApiClient {
     };
 
     try {
+      
       const response = await fetch(url, config);
+
+      // 1. Safe Error Parsing Guard
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+          const errorText = await response.text().catch(() => '');
+          let errorMessage = `HTTP error! status: ${response.status}`;
+          try {
+              if (errorText) {
+                  const errorData = JSON.parse(errorText);
+                  errorMessage = errorData.message || errorMessage;
+              }
+          } catch (e) {
+              // Fallback if error body isn't JSON
+          }
+          throw new Error(errorMessage);
       }
-      return await response.json();
+
+      // 2. Safe Success Parsing Guard (Fixes the delete column bug)
+      const responseText = await response.text();
+      return responseText ? JSON.parse(responseText) : null;
+
     } catch (error) {
       console.error(`API Request failed: ${endpoint}`, error);
       throw error;
