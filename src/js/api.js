@@ -91,13 +91,12 @@ class ApiClient {
     });
   }
 
-  static async moveCard(id, sourceColumnId, targetColumnId, newIndex) {
-    return this.request(`/v1/cards/${id}/move`, {
+  static async moveCard(cardId, columnId, position) {
+    return this.request(`/v1/cards/${cardId}/move`, {
       method: 'PATCH',
       body: JSON.stringify({
-        sourceColumnId,
-        targetColumnId,
-        newIndex,
+        columnId,
+        position
       }),
     });
   }

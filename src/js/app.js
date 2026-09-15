@@ -293,7 +293,7 @@ class KanbanApp {
         UI.updateCardCounts(this.state);
 
         try {
-            await ApiClient.moveCard(cardId, sourceColId, destColId, newIndex);
+            await ApiClient.moveCard(cardId, destColId, newIndex);
         } catch (error) {
             this.state = oldState;
             UI.renderBoard(this.state);
