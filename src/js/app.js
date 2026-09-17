@@ -439,10 +439,20 @@ class KanbanApp {
             }
 
             const response = await ApiClient.importBoard(importedState);
-            this.state = response;
+            
+            const fullFreshState = await ApiClient.getBoard(); 
+            this.state = fullFreshState;
+
+            const boardContainer = document.getElementById('boardContainer');
+            if (boardContainer) boardContainer.innerHTML = '';
+
             UI.renderBoard(this.state);
             this.initSortables();
-            alert('Data imported successfully!');
+            
+            setTimeout(() => {
+                alert('Data imported successfully!');
+            }, 10);
+
         } catch (e) {
             console.error('Import error:', e);
             alert('Failed to import data: ' + e.message);
