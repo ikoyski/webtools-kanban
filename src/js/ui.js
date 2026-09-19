@@ -307,14 +307,14 @@ export const UI = {
     updateUserHeader(user) {
         if (!user) return;
         this.userName.textContent = user.displayName;
-        this.userAvatar.src = user.avatarUrl || 'https://cdn-unavatar.io/default';
+        this.userAvatar.src = user.avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURI(user.displayName);
     },
 
     openProfile(user) {
         if (!user) return;
         this.profileName.textContent = user.displayName;
         this.profileEmail.textContent = user.email;
-        this.profileAvatar.src = user.avatarUrl || 'https://cdn-unavatar.io/default';
+        this.profileAvatar.src = user.avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURI(user.displayName);
 
         this.profileModal.classList.remove('hidden');
         this.profileModal.classList.add('flex');
