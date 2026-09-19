@@ -1,5 +1,14 @@
 export const UI = {
     // DOM Elements
+    appAuthView: document.getElementById('app-auth-view'),
+    appBoardView: document.getElementById('app-board-view'),
+    loginCard: document.getElementById('login-card'),
+    signupCard: document.getElementById('signup-card'),
+    loginForm: document.getElementById('login-form'),
+    signupForm: document.getElementById('signup-form'),
+    showSignupBtn: document.getElementById('show-signup'),
+    showLoginBtn: document.getElementById('show-login'),
+
     boardContainer: document.getElementById('board-container'),
     menuToggle: document.getElementById('menu-toggle'),
     menuDropdown: document.getElementById('menu-dropdown'),
@@ -8,6 +17,10 @@ export const UI = {
     exportMenu: document.getElementById('export-menu'),
     importMenu: document.getElementById('import-menu'),
     addColumnMenu: document.getElementById('add-column-menu'),
+    logoutMenu: document.getElementById('logout-menu'),
+    profileTrigger: document.getElementById('profile-trigger'),
+    userName: document.getElementById('user-name'),
+    userAvatar: document.getElementById('user-avatar'),
     importFile: document.getElementById('import-file'),
     themeDarkIcon: document.getElementById('theme-toggle-dark-icon'),
     themeLightIcon: document.getElementById('theme-toggle-light-icon'),
@@ -26,6 +39,11 @@ export const UI = {
     deleteColConfirm: document.getElementById('delete-col-confirm'),
     deleteColCancel: document.getElementById('delete-col-cancel'),
     closeDeleteColModal: document.getElementById('close-delete-col-modal'),
+    profileModal: document.getElementById('profile-modal'),
+    profileName: document.getElementById('profile-name'),
+    profileEmail: document.getElementById('profile-email'),
+    profileAvatar: document.getElementById('profile-avatar'),
+    closeProfileModalBtn: document.getElementById('close-profile-modal'),
 
     renderBoard(state) {
         this.boardContainer.innerHTML = '';
@@ -282,6 +300,37 @@ export const UI = {
         setTimeout(() => {
             this.deleteColumnModal.classList.add('hidden');
             this.deleteColumnModal.classList.remove('flex');
+        }, 200);
+    },
+
+    updateUserHeader(user) {
+        if (!user) return;
+        this.userName.textContent = user.displayName;
+        this.userAvatar.src = user.avatarUrl || 'https://cdn-unavatar.io/default';
+    },
+
+    openProfile(user) {
+        if (!user) return;
+        this.profileName.textContent = user.displayName;
+        this.profileEmail.textContent = user.email;
+        this.profileAvatar.src = user.avatarUrl || 'https://cdn-unavatar.io/default';
+
+        this.profileModal.classList.remove('hidden');
+        this.profileModal.classList.add('flex');
+        setTimeout(() => {
+            this.profileModal.querySelector('.relative').classList.remove('scale-95', 'opacity-0');
+            this.profileModal.querySelector('.relative').classList.add('scale-100', 'opacity-100');
+        }, 10);
+    },
+
+    closeProfile() {
+        const modalContent = this.profileModal.querySelector('.relative');
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+            this.profileModal.classList.add('hidden');
+            this.profileModal.classList.remove('flex');
         }, 200);
     }
 }

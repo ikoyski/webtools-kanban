@@ -3,9 +3,14 @@ const BASE_URL = 'https://api.ikoyski.top/kanban-backend';
 class ApiClient {
   static async request(endpoint, options = {}) {
     const url = `${BASE_URL}${endpoint}`;
+    const token = localStorage.getItem('kanban-token');
     const defaultHeaders = {
       'Content-Type': 'application/json',
     };
+
+    if (token) {
+      defaultHeaders['Authorization'] = `Bearer ${token}`;
+    }
 
     const config = {
       ...options,
@@ -16,10 +21,12 @@ class ApiClient {
     };
 
     try {
-      
       const response = await fetch(url, config);
 
-      // 1. Safe Error Parsing Guard
+      if (response.status === 401) {
+        window.dispatchEvent(new CustomEvent('auth-expired'));
+      }
+
       if (!response.ok) {
           const errorText = await response.text().catch(() => '');
           let errorMessage = `HTTP error! status: ${response.status}`;
@@ -34,7 +41,6 @@ class ApiClient {
           throw new Error(errorMessage);
       }
 
-      // 2. Safe Success Parsing Guard (Fixes the delete column bug)
       const responseText = await response.text();
       return responseText ? JSON.parse(responseText) : null;
 
@@ -44,6 +50,20 @@ class ApiClient {
     }
   }
 
+  static async login(email, password) {
+    return this.request('/v1/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+  }
+
+  static async signup(email, password, displayName) {
+    return this.request('/v1/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, displayName }),
+    });
+  }
+
   static async getBoard() {
     return this.request('/v1/board');
   }
@@ -51,9 +71,9 @@ class ApiClient {
   static async createColumn(title, boardId) {
     return this.request('/v1/columns', {
       method: 'POST',
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         title,
-        boardId 
+        boardId
       }),
     });
   }
