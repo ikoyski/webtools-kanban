@@ -68,7 +68,6 @@
                 Don't have an account? <a href="#" id="show-signup" class="text-primary-600 hover:underline font-medium">Sign up for free</a>
             </div>
         </div>
-
         <!-- Signup Card -->
         <div id="signup-card" class="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8 transition-all hidden">
             <div class="text-center mb-8">
@@ -115,6 +114,15 @@
                     <h1 class="text-xl font-bold tracking-tight hidden sm:block">WebTools <span class="text-primary-600">Kanban</span></h1>
                 </div>
                 <div class="flex items-center gap-3">
+                    <!-- Search -->
+                    <div class="relative flex-1 max-w-xs">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </span>
+                        <input type="text" id="search-input" placeholder="Search cards..." class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-2 focus:ring-primary-500 rounded-full text-sm transition-all outline-none">
+                    </div>
                     <!-- User Profile Trigger -->
                     <div class="relative">
                         <button id="profile-trigger" class="flex items-center gap-2 p-1 pr-3 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors group">
@@ -130,7 +138,6 @@
                                 <div id="menu-user-name" class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">User</div>
                                 <div id="menu-user-email" class="text-xs text-slate-500 dark:text-slate-400 truncate">user@example.com</div>
                             </div>
-
                             <!-- Account Section -->
                             <div class="py-1">
                                 <button id="change-password-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
@@ -140,9 +147,7 @@
                                     <span class="flex-1">Change Password</span>
                                 </button>
                             </div>
-
                             <div class="border-t border-slate-200 dark:border-slate-700"></div>
-
                             <!-- Board Section -->
                             <div class="py-1">
                                 <div class="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Board</div>
@@ -154,8 +159,7 @@
                                 </button>
                                 <button id="import-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m-9-4h12a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6a2 2 0 012-2z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11V3" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V7a3 3 0 013-3h10a3 3 0 013 3v1m-4 4l-4-4m0 0l-4 4m4-4v16" />
                                     </svg>
                                     <span class="flex-1">Import Data</span>
                                 </button>
@@ -166,9 +170,7 @@
                                     <span class="flex-1">Add Column</span>
                                 </button>
                             </div>
-
                             <div class="border-t border-slate-200 dark:border-slate-700"></div>
-
                             <!-- Appearance Section -->
                             <div class="py-1">
                                 <div class="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Appearance</div>
@@ -184,9 +186,7 @@
                                     </div>
                                 </button>
                             </div>
-
                             <div class="border-t border-slate-200 dark:border-slate-700"></div>
-
                             <!-- General Section -->
                             <div class="py-1">
                                 <button id="about-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
@@ -196,9 +196,7 @@
                                     <span class="flex-1">About</span>
                                 </button>
                             </div>
-
                             <div class="border-t border-slate-200 dark:border-slate-700"></div>
-
                             <!-- Footer Section -->
                             <div class="py-1">
                                 <button id="logout-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-3 transition-colors">

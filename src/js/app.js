@@ -346,13 +346,11 @@ class KanbanApp {
     }
 
     initSortables() {
-        console.log('--- Sortable Init Start ---');
         if (typeof Sortable === 'undefined') {
             console.error('SortableJS is not loaded. Please check the CDN link in index.html');
             return;
         }
 
-        console.log('Initializing Sortables...');
         Object.values(this.state.columns).forEach(column => {
             const el = document.querySelector(`[data-column-id="${column.id}"]`);
             if (!el) {
@@ -360,7 +358,6 @@ class KanbanApp {
                 return;
             }
 
-            console.log(`Creating sortable for column: ${column.id}`);
             Sortable.create(el, {
                 group: 'kanban',
                 handle: '.drag-handle',
