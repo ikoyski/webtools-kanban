@@ -20,11 +20,12 @@ The project is a vanilla JavaScript implementation of a Kanban board using ES6 m
 - State is maintained as a central object within the `KanbanApp` instance.
 - State includes `columns` (mapping column IDs to lists of card IDs), `cards` (mapping card IDs to card data), and `settings` (e.g., theme).
 - State changes are persisted via `ApiClient` to a REST API backend, using optimistic updates for a snappy UI.
+- **Authentication**: Users are authenticated via JWTs stored in `localStorage`. Session state is checked on startup and before board initialization.
 
 ### UI Interaction Patterns
 - **DOM Access**: The `UI` object centralizes access to common DOM elements.
 - **Communication**: The project uses an event-driven approach for UI-to-App communication. The `UI` layer often dispatches `CustomEvent` objects on the `window` object to signal actions that require state changes.
-    - Example events: `open-card-modal`, `rename-column`, `delete-column`.
+    - Example events: `open-card-modal`, `rename-column`, `delete-column`, `auth-expired`.
 - **Rendering**: The board is re-rendered entirely via `UI.renderBoard(state)` whenever a significant state change occurs, followed by a re-initialization of SortableJS.
 
 ### Key Dependencies

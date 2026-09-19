@@ -308,18 +308,35 @@ class KanbanApp {
             const destinationId = UI.deleteColDestination.value;
 
             if (column.cardIds.length > 0) {
+                if (!destinationId) {
+                    alert('Please select a destination column for the cards.');
+                    return;
+                }
+                const destCol = this.state.columns[destinationId];
+                destCol.cardIds.push(...column.cardIds);
+            }
+
+            const oldColumns = { ...this.state.columns };
+            delete this.state.columns[columnId];
+
+            UI.renderBoard(this.state);
+            this.initSortables();
+            UI.closeDeleteColumnModal();
+            this.pendingDeleteColId = null;
+
+            try {
                 if (column.cardIds.length > 0 && destinationId) {
                     await Promise.all(column.cardIds.map((cardId, index) =>
                         ApiClient.moveCard(cardId, destinationId, this.state.columns[destinationId].cardIds.length - 1)
                     ));
                 }
                 await ApiClient.deleteColumn(columnId);
-            } else {
-                await ApiClient.deleteColumn(columnId);
+            } catch (error) {
+                this.state.columns = oldColumns;
+                UI.renderBoard(this.state);
+                this.initSortables();
+                alert('Failed to create card: ' + error.message);
             }
-
-            // This part was simplified for brevity in the Edit call but should be full logic
-            // I'll rewrite the full file to be safe.
         };
 
         UI.deleteColCancel.onclick = () => {
