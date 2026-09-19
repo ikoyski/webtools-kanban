@@ -127,6 +127,7 @@ class KanbanApp {
             UI.menuDropdown.classList.toggle('hidden');
         };
 
+
         // Theme Toggle from Menu
         UI.themeToggleMenu.onclick = (e) => {
             e.stopPropagation();
@@ -190,16 +191,20 @@ class KanbanApp {
             this.handleLogout();
         };
 
-        // Profile Trigger
-        UI.profileTrigger.onclick = () => {
-            const user = JSON.parse(localStorage.getItem('kanban-user') || '{}');
-            UI.openProfile(user);
-        };
+        // Change Password Placeholder
+        if (UI.changePasswordMenu) {
+            UI.changePasswordMenu.onclick = (e) => {
+                e.stopPropagation();
+                UI.menuDropdown.classList.add('hidden');
+            };
+        }
+
 
         // Close menu when clicking outside
         document.addEventListener('click', () => {
             UI.menuDropdown.classList.add('hidden');
         });
+
 
         // About Modal Controls
         UI.closeAboutModalBtn.onclick = () => UI.closeAboutModal();
