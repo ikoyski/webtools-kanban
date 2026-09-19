@@ -10,7 +10,7 @@ export const UI = {
     showLoginBtn: document.getElementById('show-login'),
 
     boardContainer: document.getElementById('board-container'),
-    menuToggle: document.getElementById('menu-toggle'),
+    menuToggle: document.getElementById('profile-trigger'),
     menuDropdown: document.getElementById('menu-dropdown'),
     themeToggleMenu: document.getElementById('theme-toggle-menu'),
     aboutMenu: document.getElementById('about-menu'),
@@ -18,10 +18,11 @@ export const UI = {
     importMenu: document.getElementById('import-menu'),
     logoutMenu: document.getElementById('logout-menu'),
     addColumnMenu: document.getElementById('add-column-menu'),
-    logoutMenu: document.getElementById('logout-menu'),
-    profileTrigger: document.getElementById('profile-trigger'),
+    changePasswordMenu: document.getElementById('change-password-menu'),
     userName: document.getElementById('user-name'),
     userAvatar: document.getElementById('user-avatar'),
+    menuUserName: document.getElementById('menu-user-name'),
+    menuUserEmail: document.getElementById('menu-user-email'),
     importFile: document.getElementById('import-file'),
     themeDarkIcon: document.getElementById('theme-toggle-dark-icon'),
     themeLightIcon: document.getElementById('theme-toggle-light-icon'),
@@ -308,6 +309,8 @@ export const UI = {
         if (!user) return;
         this.userName.textContent = user.displayName;
         this.userAvatar.src = user.avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURI(user.displayName);
+        if (this.menuUserName) this.menuUserName.textContent = user.displayName;
+        if (this.menuUserEmail) this.menuUserEmail.textContent = user.email;
     },
 
     openProfile(user) {
