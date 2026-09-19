@@ -7,6 +7,7 @@ export const UI = {
     aboutMenu: document.getElementById('about-menu'),
     exportMenu: document.getElementById('export-menu'),
     importMenu: document.getElementById('import-menu'),
+    logoutMenu: document.getElementById('logout-menu'),
     addColumnMenu: document.getElementById('add-column-menu'),
     importFile: document.getElementById('import-file'),
     themeDarkIcon: document.getElementById('theme-toggle-dark-icon'),
