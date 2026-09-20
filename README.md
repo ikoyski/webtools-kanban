@@ -6,7 +6,9 @@ A modern, responsive Kanban board implementation featuring drag-and-drop functio
 
 - **Authentication**: Secure user accounts with Login, Signup, and session persistence.
 - **User Profile**: Personalized experience with display names and avatars.
-- **Drag and Drop**: Easily move cards between columns using SortableJS.
+- **Multi-Board Support**: Create, rename, and switch between multiple Kanban boards.
+- **Collaborative Access**: Invite members to boards with role-based permissions (Owner, Editor, Viewer).
+- **Drag and Drop**: Easily move cards between columns using SortableJS (available for Owners and Editors).
 - **Dark Mode**: Seamlessly switch between light and dark themes.
 - **REST API**: Your boards and cards are persisted in a PostgreSQL database via a REST API.
 - **Responsive Design**: Works on desktops, tablets, and mobile devices.

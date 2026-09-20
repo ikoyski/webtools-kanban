@@ -64,8 +64,32 @@ class ApiClient {
     });
   }
 
-  static async getBoard() {
+  static async getBoards() {
     return this.request('/v1/boards');
+  }
+
+  static async getBoard(boardId) {
+    return this.request(`/v1/boards/${boardId}`);
+  }
+
+  static async createBoard(name) {
+    return this.request('/v1/boards', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
+  }
+
+  static async renameBoard(boardId, name) {
+    return this.request(`/v1/boards/${boardId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    });
+  }
+
+  static async deleteBoard(boardId) {
+    return this.request(`/v1/boards/${boardId}`, {
+      method: 'DELETE',
+    });
   }
 
   static async createColumn(title, boardId) {
@@ -121,14 +145,38 @@ class ApiClient {
     });
   }
 
-  static async exportBoard() {
-    return this.request('/v1/boards/export');
+  static async exportBoard(boardId) {
+    return this.request(`/v1/boards/${boardId}/export`);
   }
 
-  static async importBoard(boardData) {
-    return this.request('/v1/boards/import', {
+  static async importBoard(boardId, boardData) {
+    return this.request(`/v1/boards/${boardId}/import`, {
       method: 'PUT',
       body: JSON.stringify(boardData),
+    });
+  }
+
+  static async getMembers(boardId) {
+    return this.request(`/v1/boards/${boardId}/members`);
+  }
+
+  static async addMember(boardId, email, role) {
+    return this.request(`/v1/boards/${boardId}/members`, {
+      method: 'POST',
+      body: JSON.stringify({ email, role }),
+    });
+  }
+
+  static async updateMemberRole(boardId, userId, role) {
+    return this.request(`/v1/boards/${boardId}/members/${userId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    });
+  }
+
+  static async removeMember(boardId, userId) {
+    return this.request(`/v1/boards/${boardId}/members/${userId}`, {
+      method: 'DELETE',
     });
   }
 }

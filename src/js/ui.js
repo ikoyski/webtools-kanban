@@ -10,17 +10,21 @@ export const UI = {
     showLoginBtn: document.getElementById('show-login'),
 
     boardContainer: document.getElementById('board-container'),
+    boardSwitcher: document.getElementById('board-switcher'),
+    createBoardBtn: document.getElementById('create-board-btn'),
     menuToggle: document.getElementById('profile-trigger'),
     menuDropdown: document.getElementById('menu-dropdown'),
     themeToggleMenu: document.getElementById('theme-toggle-menu'),
     aboutMenu: document.getElementById('about-menu'),
     exportMenu: document.getElementById('export-menu'),
     importMenu: document.getElementById('import-menu'),
+    membersMenu: document.getElementById('members-menu'),
     logoutMenu: document.getElementById('logout-menu'),
     addColumnMenu: document.getElementById('add-column-menu'),
     changePasswordMenu: document.getElementById('change-password-menu'),
     userName: document.getElementById('user-name'),
     userAvatar: document.getElementById('user-avatar'),
+    userRoleBadge: document.getElementById('user-role-badge'),
     menuUserName: document.getElementById('menu-user-name'),
     menuUserEmail: document.getElementById('menu-user-email'),
     importFile: document.getElementById('import-file'),
@@ -46,28 +50,55 @@ export const UI = {
     profileEmail: document.getElementById('profile-email'),
     profileAvatar: document.getElementById('profile-avatar'),
     closeProfileModalBtn: document.getElementById('close-profile-modal'),
+    membersModal: document.getElementById('members-modal'),
+    membersList: document.getElementById('members-list'),
+    closeMembersModalBtn: document.getElementById('close-members-modal'),
 
-    renderBoard(state) {
+    renderBoard(state, role = 'EDITOR') {
         this.boardContainer.innerHTML = '';
 
         Object.values(state.columns).forEach(column => {
-            const colEl = this.createColumnElement(column, state.cards);
+            const colEl = this.createColumnElement(column, state.cards, role);
             this.boardContainer.appendChild(colEl);
         });
     },
 
-    createColumnElement(column, cards) {
+    renderEmptyState() {
+        this.boardContainer.innerHTML = `
+            <div class="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-6">
+                <div class="bg-slate-200 dark:bg-slate-800 p-6 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6 0h3m-3 4h3" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">No boards yet</h2>
+                    <p class="text-slate-500 dark:text-slate-400 max-w-xs mx-auto mt-2">You don't have any boards yet. Create one to start organizing your tasks!</p>
+                </div>
+                <button id="create-first-board-btn" class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95">
+                    Create Your First Board
+                </button>
+            </div>
+        `;
+
+        document.getElementById('create-first-board-btn').onclick = () => {
+            window.dispatchEvent(new CustomEvent('create-board-trigger'));
+        };
+    },
+
+    createColumnElement(column, cards, role = 'EDITOR') {
         const div = document.createElement('div');
         div.className = 'group flex-shrink-0 w-[300px] flex flex-col max-h-full bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700';
         div.id = `col-${column.id}`;
 
         const cardCount = column.cardIds.length;
+        const isViewer = role === 'VIEWER';
 
         div.innerHTML = `
             <div class="flex items-center justify-between mb-4 px-1">
                 <div class="flex items-center gap-2">
                     <h3 class="font-bold text-slate-700 dark:text-slate-200">${column.title}</h3>
-                    <div class="flex gap-1 opacity-60 hover:opacity-100 transition-opacity">
+                    <div class="flex gap-1 opacity-60 hover:opacity-100 transition-opacity ${isViewer ? 'hidden' : ''}">
                         <button class="rename-col-btn text-slate-400 hover:text-primary-600 transition-colors" title="Rename Column">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -81,36 +112,45 @@ export const UI = {
                     </div>
                     <span class="column-card-count text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">${cardCount}</span>
                 </div>
-                <button class="add-card-btn text-slate-400 hover:text-primary-600 transition-colors" title="Add Card">
+                <button class="add-card-btn text-slate-400 hover:text-primary-600 transition-colors ${isViewer ? 'hidden' : ''}" title="Add Card">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                     </svg>
                 </button>
             </div>
             <div class="card-list flex-1 overflow-y-auto space-y-3 pb-4" data-column-id="${column.id}">
-                ${column.cardIds.map(id => this.createCardHTML(cards[id])).join('')}
+                ${column.cardIds.map(id => this.createCardHTML(cards[id], role)).join('')}
             </div>
         `;
 
         // Attach listener to the "Add Card" button
-        div.querySelector('.add-card-btn').onclick = () => {
-            window.dispatchEvent(new CustomEvent('open-card-modal', { detail: { columnId: column.id } }));
-        };
+        const addBtn = div.querySelector('.add-card-btn');
+        if (addBtn) {
+            addBtn.onclick = () => {
+                window.dispatchEvent(new CustomEvent('open-card-modal', { detail: { columnId: column.id } }));
+            };
+        }
 
         // Attach listener to the "Rename Column" button
-        div.querySelector('.rename-col-btn').onclick = () => {
-            window.dispatchEvent(new CustomEvent('rename-column', { detail: { columnId: column.id } }));
-        };
+        const renameBtn = div.querySelector('.rename-col-btn');
+        if (renameBtn) {
+            renameBtn.onclick = () => {
+                window.dispatchEvent(new CustomEvent('rename-column', { detail: { columnId: column.id } }));
+            };
+        }
 
         // Attach listener to the "Delete Column" button
-        div.querySelector('.delete-col-btn').onclick = () => {
-            window.dispatchEvent(new CustomEvent('delete-column', { detail: { columnId: column.id } }));
-        };
+        const deleteBtn = div.querySelector('.delete-col-btn');
+        if (deleteBtn) {
+            deleteBtn.onclick = () => {
+                window.dispatchEvent(new CustomEvent('delete-column', { detail: { columnId: column.id } }));
+            };
+        }
 
         return div;
     },
 
-    createCardHTML(card) {
+    createCardHTML(card, role = 'EDITOR') {
         if (!card) return '';
 
         const priorityColors = {
@@ -121,6 +161,7 @@ export const UI = {
 
         const priorityClass = priorityColors[card.priority] || priorityColors['Medium'];
         const labelsHTML = card.labels.map(l => `<span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400">${l}</span>`).join(' ');
+        const isViewer = role === 'VIEWER';
 
         return `
             <div class="card group bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border-l-4 ${priorityClass} cursor-pointer relative" data-card-id="${card.id}" data-id="${card.id}">
@@ -148,7 +189,7 @@ export const UI = {
                             </div>
                         ` : ''}
                     </div>
-                    <div class="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <div class="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ${isViewer ? 'hidden' : ''}">
                         <button class="edit-btn p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400 hover:text-primary-600 transition-colors" title="Edit">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
@@ -305,12 +346,28 @@ export const UI = {
         }, 200);
     },
 
-    updateUserHeader(user) {
+    renderBoardSwitcher(boards, currentBoardId) {
+        if (!this.boardSwitcher) return;
+
+        this.boardSwitcher.innerHTML = `
+            <option value="" disabled ${!currentBoardId ? 'selected' : ''}>Select Board</option>
+            ${boards.map(b => `
+                <option value="${b.id}" ${b.id === currentBoardId ? 'selected' : ''}>
+                    ${b.name}
+                </option>
+            `).join('')}
+        `;
+    },
+
+    updateUserHeader(user, role) {
         if (!user) return;
         this.userName.textContent = user.displayName;
         this.userAvatar.src = user.avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURI(user.displayName);
         if (this.menuUserName) this.menuUserName.textContent = user.displayName;
         if (this.menuUserEmail) this.menuUserEmail.textContent = user.email;
+        if (this.userRoleBadge) {
+            this.userRoleBadge.textContent = role;
+        }
     },
 
     openProfile(user) {
@@ -327,14 +384,46 @@ export const UI = {
         }, 10);
     },
 
-    closeProfile() {
-        const modalContent = this.profileModal.querySelector('.relative');
+    openMembersModal(members, role) {
+        this.membersModal.classList.remove('hidden');
+        this.membersModal.classList.add('flex');
+
+        this.membersList.innerHTML = members.map(m => `
+            <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600">
+                <div class="flex items-center gap-3">
+                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(m.displayName)}" class="w-8 h-8 rounded-full" alt="">
+                    <div>
+                        <div class="text-sm font-bold text-slate-800 dark:text-slate-100">${m.displayName}</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">${m.email}</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-400">${m.role}</span>
+                    ${role === 'OWNER' ? `
+                        <button class="text-red-500 hover:text-red-700 transition-colors" data-user-id="${m.userId}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+
+        setTimeout(() => {
+            this.membersModal.querySelector('.relative').classList.remove('scale-95', 'opacity-0');
+            this.membersModal.querySelector('.relative').classList.add('scale-100', 'opacity-100');
+        }, 10);
+    },
+
+    closeMembersModal() {
+        const modalContent = this.membersModal.querySelector('.relative');
         modalContent.classList.remove('scale-100', 'opacity-100');
         modalContent.classList.add('scale-95', 'opacity-0');
 
         setTimeout(() => {
-            this.profileModal.classList.add('hidden');
-            this.profileModal.classList.remove('flex');
+            this.membersModal.classList.add('hidden');
+            this.membersModal.classList.remove('flex');
         }, 200);
     }
 }

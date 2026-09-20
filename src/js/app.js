@@ -4,13 +4,22 @@ import { UI } from './ui.js';
 class KanbanApp {
     constructor() {
         this.state = null;
+        this.boards = [];
+        this.currentBoardId = null;
+        this.currentRole = null;
     }
 
     async start() {
         this.setupAuthListeners();
 
         if (this.checkAuth()) {
-            await this.loadBoard();
+            try {
+                this.boards = await ApiClient.getBoards();
+                await this.resolveActiveBoard();
+            } catch (error) {
+                console.error('Failed to load boards:', error);
+                this.handleLogout();
+            }
         } else {
             this.switchView('auth');
         }
@@ -30,9 +39,37 @@ class KanbanApp {
         }
     }
 
-    async loadBoard() {
+    async resolveActiveBoard() {
+        const params = new URLSearchParams(window.location.search);
+        const boardParam = params.get('board');
+        const storedBoardId = localStorage.getItem('kanban-active-board');
+
+        let activeId = null;
+
+        if (boardParam && this.boards.some(b => b.id === boardParam)) {
+            activeId = boardParam;
+        } else if (storedBoardId && this.boards.some(b => b.id === storedBoardId)) {
+            activeId = storedBoardId;
+        } else if (this.boards.length > 0) {
+            activeId = this.boards[0].id;
+        }
+
+        if (activeId) {
+            await this.loadBoard(activeId);
+        } else {
+            this.showEmptyState();
+        }
+    }
+
+    async loadBoard(boardId) {
         try {
-            this.state = await ApiClient.getBoard();
+            const boardData = await ApiClient.getBoard(boardId);
+            this.state = boardData;
+            this.currentBoardId = boardId;
+            this.currentRole = boardData.role;
+
+            localStorage.setItem('kanban-active-board', boardId);
+            this.updateUrl(boardId);
 
             // Load theme from localStorage if available
             const savedTheme = localStorage.getItem('kanban-theme');
@@ -43,29 +80,58 @@ class KanbanApp {
             this.switchView('board');
             this.init();
         } catch (error) {
-            console.error('Failed to load board:', error);
+            console.error(`Failed to load board ${boardId}:`, error);
             if (error.message.includes('401')) {
                 this.handleLogout();
+            } else if (error.message.includes('403')) {
+                alert('You don\'t have permission to access this board.');
+                this.resolveActiveBoard(); // Try to find another valid board
             } else {
                 alert('Failed to load board from server. Please refresh the page.');
             }
         }
     }
 
+    updateUrl(boardId) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('board', boardId);
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+
+        // Use replaceState on first load, pushState on manual switches
+        // For simplicity in this method, we'll use replaceState.
+        // The manual switch handler will call pushState.
+        history.replaceState(null, '', newUrl);
+    }
+
+    showEmptyState() {
+        this.switchView('board');
+        UI.renderEmptyState();
+    }
+
     init() {
         // Initial Render
-        UI.renderBoard(this.state);
+        UI.renderBoard(this.state, this.currentRole);
         UI.setTheme(this.state.settings.theme);
 
         // Setup user profile in header
         const user = JSON.parse(localStorage.getItem('kanban-user') || '{}');
-        UI.updateUserHeader(user);
+        UI.updateUserHeader(user, this.currentRole);
 
         this.setupEventListeners();
         this.initSortables();
+        UI.renderBoardSwitcher(this.boards, this.currentBoardId);
     }
 
     setupAuthListeners() {
+        // Popstate listener for browser back/forward
+        window.addEventListener('popstate', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const boardId = params.get('board');
+            if (boardId && boardId !== this.currentBoardId) {
+                await this.loadBoard(boardId);
+            }
+        });
+
         // Toggle between Login and Signup cards
         UI.showSignupBtn.onclick = () => {
             UI.loginCard.classList.add('hidden');
@@ -121,6 +187,44 @@ class KanbanApp {
     }
 
     setupEventListeners() {
+        // Board Switcher
+        UI.boardSwitcher.onchange = async (e) => {
+            const newBoardId = e.target.value;
+            if (newBoardId && newBoardId !== this.currentBoardId) {
+                const params = new URLSearchParams(window.location.search);
+                params.set('board', newBoardId);
+                history.pushState(null, '', `${window.location.pathname}?${params.toString()}`);
+                await this.loadBoard(newBoardId);
+            }
+        };
+
+        // Create Board
+        UI.createBoardBtn.onclick = async () => {
+            const name = prompt('Enter board name:');
+            if (name && name.trim()) {
+                try {
+                    const newBoard = await ApiClient.createBoard(name.trim());
+                    this.boards.push(newBoard);
+                    await this.loadBoard(newBoard.id);
+                    UI.renderBoardSwitcher(this.boards, this.currentBoardId);
+                } catch (error) {
+                    alert('Failed to create board: ' + error.message);
+                }
+            }
+        };
+
+        // Members Modal
+        UI.membersMenu.onclick = async (e) => {
+            e.stopPropagation();
+            try {
+                const members = await ApiClient.getMembers(this.currentBoardId);
+                UI.openMembersModal(members, this.currentRole);
+            } catch (error) {
+                alert('Failed to load members: ' + error.message);
+            }
+            UI.menuDropdown.classList.add('hidden');
+        };
+
         // Menu Toggle
         UI.menuToggle.onclick = (e) => {
             e.stopPropagation();
@@ -364,6 +468,8 @@ class KanbanApp {
     }
 
     initSortables() {
+        if (this.currentRole === 'VIEWER') return;
+
         if (typeof Sortable === 'undefined') {
             console.error('SortableJS is not loaded. Please check the CDN link in index.html');
             return;
@@ -393,6 +499,13 @@ class KanbanApp {
     }
 
     async handleSortEnd(evt) {
+        if (this.currentRole === 'VIEWER') {
+            // Revert the move visually if Sortable allowed it
+            UI.renderBoard(this.state);
+            this.initSortables();
+            return;
+        }
+
         const { oldIndex, newIndex } = evt;
         const sourceColId = evt.from.dataset.columnId;
         const destColId = evt.to.dataset.columnId;
@@ -414,6 +527,11 @@ class KanbanApp {
 
     // create new card or update card
     async handleFormSubmit() {
+        if (this.currentRole === 'VIEWER') {
+            alert('You do not have permission to edit cards.');
+            return;
+        }
+
         const cardId = document.getElementById('card-id').value;
         const columnId = document.getElementById('column-id').value;
 
@@ -479,6 +597,11 @@ class KanbanApp {
     }
 
     async handleDelete() {
+        if (this.currentRole === 'VIEWER') {
+            alert('You do not have permission to delete cards.');
+            return;
+        }
+
         const cardId = this.pendingDeleteId;
         if (!cardId) return;
 

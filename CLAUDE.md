@@ -18,9 +18,11 @@ The project is a vanilla JavaScript implementation of a Kanban board using ES6 m
 
 ### State Management
 - State is maintained as a central object within the `KanbanApp` instance.
+- The app supports multi-board functionality; `currentBoardId` and `currentRole` are tracked to manage access and persistence.
 - State includes `columns` (mapping column IDs to lists of card IDs), `cards` (mapping card IDs to card data), and `settings` (e.g., theme).
 - State changes are persisted via `ApiClient` to a REST API backend, using optimistic updates for a snappy UI.
 - **Authentication**: Users are authenticated via JWTs stored in `localStorage`. Session state is checked on startup and before board initialization.
+- **Role-Based Access Control (RBAC)**: The app enforces roles (`OWNER`, `EDITOR`, `VIEWER`). Mutating actions and certain UI elements are gated based on the current board role.
 
 ### UI Interaction Patterns
 - **DOM Access**: The `UI` object centralizes access to common DOM elements.
