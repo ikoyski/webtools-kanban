@@ -281,6 +281,15 @@ class KanbanApp {
             }
         };
 
+        // Profile Info Click (Open Profile Modal)
+        UI.menuDropdown.onclick = (e) => {
+            const userInfo = e.target.closest('.bg-slate-50/50');
+            if (userInfo) {
+                const user = JSON.parse(localStorage.getItem('kanban-user') || '{}');
+                UI.openProfile(user);
+            }
+        };
+
 
         // Theme Toggle from Menu
         UI.themeToggleMenu.onclick = (e) => {
