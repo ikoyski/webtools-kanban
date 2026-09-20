@@ -225,6 +225,38 @@ class KanbanApp {
             UI.menuDropdown.classList.add('hidden');
         };
 
+        // Handle Member Invitations
+        UI.inviteMemberForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const email = UI.inviteEmail.value;
+            const role = UI.inviteRole.value;
+            try {
+                await ApiClient.addMember(this.currentBoardId, email, role);
+                // Refresh members list
+                const members = await ApiClient.getMembers(this.currentBoardId);
+                UI.openMembersModal(members, this.currentRole);
+                UI.inviteEmail.value = '';
+            } catch (error) {
+                alert('Failed to invite member: ' + error.message);
+            }
+        };
+
+        // Handle Member Removal
+        UI.membersList.onclick = async (e) => {
+            const removeBtn = e.target.closest('button[data-user-id]');
+            if (removeBtn) {
+                const userId = removeBtn.dataset.userId;
+                if (!confirm('Are you sure you want to remove this member?')) return;
+                try {
+                    await ApiClient.removeMember(this.currentBoardId, userId);
+                    const members = await ApiClient.getMembers(this.currentBoardId);
+                    UI.openMembersModal(members, this.currentRole);
+                } catch (error) {
+                    alert('Failed to remove member: ' + error.message);
+                }
+            }
+        };
+
         // Menu Toggle
         UI.menuToggle.onclick = (e) => {
             e.stopPropagation();
@@ -309,13 +341,20 @@ class KanbanApp {
             UI.menuDropdown.classList.add('hidden');
         });
 
+        // Close members modal when clicking outside
+        UI.membersModal.onclick = (e) => {
+            if (e.target === UI.membersModal) {
+                UI.closeMembersModal();
+            }
+        };
+
 
         // About Modal Controls
         UI.closeAboutModalBtn.onclick = () => UI.closeAboutModal();
         UI.aboutOkBtn.onclick = () => UI.closeAboutModal();
 
-        // Profile Modal Controls
-        UI.closeProfileModalBtn.onclick = () => UI.closeProfile();
+        // Close members modal via button
+        UI.closeMembersModalBtn.onclick = () => UI.closeMembersModal();
 
         // Modal Controls
         document.getElementById('close-modal').onclick = () => UI.closeModal();

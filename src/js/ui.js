@@ -53,6 +53,10 @@ export const UI = {
     membersModal: document.getElementById('members-modal'),
     membersList: document.getElementById('members-list'),
     closeMembersModalBtn: document.getElementById('close-members-modal'),
+    inviteMemberSection: document.getElementById('invite-member-section'),
+    inviteMemberForm: document.getElementById('invite-member-form'),
+    inviteEmail: document.getElementById('invite-email'),
+    inviteRole: document.getElementById('invite-role'),
 
     renderBoard(state, role = 'EDITOR') {
         this.boardContainer.innerHTML = '';
