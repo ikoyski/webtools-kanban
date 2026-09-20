@@ -186,6 +186,20 @@ class KanbanApp {
         window.addEventListener('auth-expired', () => this.handleLogout());
     }
 
+    async createBoard() {
+        const name = prompt('Enter board name:');
+        if (name && name.trim()) {
+            try {
+                const newBoard = await ApiClient.createBoard(name.trim());
+                this.boards.push(newBoard);
+                await this.loadBoard(newBoard.id);
+                UI.renderBoardSwitcher(this.boards, this.currentBoardId);
+            } catch (error) {
+                alert('Failed to create board: ' + error.message);
+            }
+        }
+    },
+
     setupEventListeners() {
         // Board Switcher
         UI.boardSwitcher.onchange = async (e) => {
@@ -200,18 +214,13 @@ class KanbanApp {
 
         // Create Board
         UI.createBoardBtn.onclick = async () => {
-            const name = prompt('Enter board name:');
-            if (name && name.trim()) {
-                try {
-                    const newBoard = await ApiClient.createBoard(name.trim());
-                    this.boards.push(newBoard);
-                    await this.loadBoard(newBoard.id);
-                    UI.renderBoardSwitcher(this.boards, this.currentBoardId);
-                } catch (error) {
-                    alert('Failed to create board: ' + error.message);
-                }
-            }
+            await this.createBoard();
         };
+
+        // Empty State Create Board Trigger
+        window.addEventListener('create-board-trigger', async () => {
+            await this.createBoard();
+        });
 
         // Members Modal
         UI.membersMenu.onclick = async (e) => {
@@ -261,6 +270,15 @@ class KanbanApp {
         UI.menuToggle.onclick = (e) => {
             e.stopPropagation();
             UI.menuDropdown.classList.toggle('hidden');
+        };
+
+        // Profile Info Click (Open Profile Modal)
+        UI.menuDropdown.onclick = (e) => {
+            const userInfo = e.target.closest('.bg-slate-50/50');
+            if (userInfo) {
+                const user = JSON.parse(localStorage.getItem('kanban-user') || '{}');
+                UI.openProfile(user);
+            }
         };
 
 
