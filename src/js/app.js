@@ -313,18 +313,36 @@ class KanbanApp {
             const destinationId = UI.deleteColDestination.value;
 
             if (column.cardIds.length > 0) {
+                if (!destinationId) {
+                    alert('Please select a destination column for the cards.');
+                    return;
+                }
+                const destCol = this.state.columns[destinationId];
+                destCol.cardIds.push(...column.cardIds);
+            }
+
+            const oldColumns = { ...this.state.columns };
+            delete this.state.columns[columnId];
+
+            UI.renderBoard(this.state);
+            this.initSortables();
+            UI.closeDeleteColumnModal();
+            this.pendingDeleteColId = null;
+
+            try {
+                // Move cards via API if necessary
                 if (column.cardIds.length > 0 && destinationId) {
                     await Promise.all(column.cardIds.map((cardId, index) =>
                         ApiClient.moveCard(cardId, destinationId, this.state.columns[destinationId].cardIds.length - 1)
                     ));
                 }
                 await ApiClient.deleteColumn(columnId);
-            } else {
-                await ApiClient.deleteColumn(columnId);
+            } catch (error) {
+                this.state.columns = oldColumns;
+                UI.renderBoard(this.state);
+                this.initSortables();
+                alert('Failed to delete column: ' + error.message);
             }
-
-            // This part was simplified for brevity in the Edit call but should be full logic
-            // I'll rewrite the full file to be safe.
         };
 
         UI.deleteColCancel.onclick = () => {
@@ -394,6 +412,7 @@ class KanbanApp {
         }
     }
 
+    // create new card or update card
     async handleFormSubmit() {
         const cardId = document.getElementById('card-id').value;
         const columnId = document.getElementById('column-id').value;
@@ -407,6 +426,7 @@ class KanbanApp {
         };
 
         if (cardId) {
+            // update card
             const oldCard = { ...this.state.cards[cardId] };
             this.state.cards[cardId] = { ...oldCard, ...cardData };
             UI.renderBoard(this.state);
@@ -419,6 +439,7 @@ class KanbanApp {
                 this.state.cards[cardId] = oldCard;
             }
         } else {
+            // create new card
             const tempId = 'card-' + Date.now();
             const newCard = {
                 id: tempId,
@@ -436,14 +457,13 @@ class KanbanApp {
             UI.closeModal();
 
             try {
-                const createdCard = await ApiClient.createCard(columnId || 'todo', cardData);
+                const createdCard = await ApiClient.createCard(columnId, cardData);
                 delete this.state.cards[tempId];
                 this.state.cards[createdCard.id] = createdCard;
 
                 Object.values(this.state.columns).forEach(col => {
-                    col.cardIds = col.cardIds.map(id => id === tempId ? createdCard.id : createdCard.id);
+                    col.cardIds = col.cardIds.map(id => id === tempId ? createdCard.id : id);
                 });
-
                 UI.renderBoard(this.state);
                 this.initSortables();
             } catch (error) {

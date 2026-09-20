@@ -65,7 +65,7 @@ class ApiClient {
   }
 
   static async getBoard() {
-    return this.request('/v1/board');
+    return this.request('/v1/boards');
   }
 
   static async createColumn(title, boardId) {
@@ -122,11 +122,11 @@ class ApiClient {
   }
 
   static async exportBoard() {
-    return this.request('/v1/board/export');
+    return this.request('/v1/boards/export');
   }
 
   static async importBoard(boardData) {
-    return this.request('/v1/board/import', {
+    return this.request('/v1/boards/import', {
       method: 'PUT',
       body: JSON.stringify(boardData),
     });
