@@ -307,12 +307,13 @@ class KanbanApp {
         // Export Menu
         UI.exportMenu.onclick = (e) => {
             e.stopPropagation();
-            this.exportData();
+            this.exportData(this.currentBoardId);
             UI.menuDropdown.classList.add('hidden');
         };
 
         // Import Menu
         UI.importMenu.onclick = (e) => {
+            console.log('this.currentBoardId: '+this.currentBoardId);
             e.stopPropagation();
             UI.importFile.click();
             UI.menuDropdown.classList.add('hidden');
@@ -320,9 +321,10 @@ class KanbanApp {
 
         // Import File Change
         UI.importFile.onchange = (e) => {
+            console.log('this.currentBoardId: '+this.currentBoardId);
             const file = e.target.files[0];
             if (file) {
-                this.importData(file);
+                this.importData(this.currentBoardId, file);
             }
             UI.importFile.value = ''; // Reset input
         };
@@ -702,9 +704,9 @@ class KanbanApp {
         });
     }
 
-    async exportData() {
+    async exportData(boardId) {
         try {
-            const boardData = await ApiClient.exportBoard();
+            const boardData = await ApiClient.exportBoard(boardId);
             const dataStr = JSON.stringify(boardData, null, 2);
             const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
             const exportFileDefaultName = 'kanban-data.json';
@@ -718,7 +720,7 @@ class KanbanApp {
         }
     }
 
-    async importData(file) {
+    async importData(boardId, file) {
         try {
             const text = await file.text();
             const importedState = JSON.parse(text);
@@ -727,9 +729,9 @@ class KanbanApp {
                 throw new Error('Invalid data format');
             }
 
-            const response = await ApiClient.importBoard(importedState);
+            const response = await ApiClient.importBoard(boardId, importedState);
 
-            const fullFreshState = await ApiClient.getBoard();
+            const fullFreshState = await ApiClient.getBoard(boardId);
             this.state = fullFreshState;
 
             const boardContainer = document.getElementById('boardContainer');
