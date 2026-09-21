@@ -351,8 +351,10 @@ class KanbanApp {
 
 
         // Close menu when clicking outside
-        document.addEventListener('click', () => {
-            UI.menuDropdown.classList.add('hidden');
+        document.addEventListener('click', (e) => {
+            if (!UI.menuDropdown.contains(e.target) && e.target !== UI.menuToggle) {
+                UI.menuDropdown.classList.add('hidden');
+            }
         });
 
         // Close members modal when clicking outside
