@@ -129,7 +129,7 @@
                             <img id="user-avatar" src="https://ui-avatars.com/api/?name=" class="w-8 h-8 rounded-full border-2 border-primary-500" alt="Avatar">
                             <div class="flex items-center gap-2">
                                 <span id="user-name" class="text-sm font-medium text-slate-700 dark:text-slate-200 hidden sm:block">User</span>
-                                <span id="user-role-badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary-200 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 hidden sm:block uppercase">Role</span>
+                                <span id="user-role-badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary-200 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 hidden sm:block uppercase"></span>
                             </div>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -151,18 +151,25 @@
                                 </button>
                             </div>
                             <div class="border-t border-slate-200 dark:border-slate-700"></div>
-                            <!-- Board Section -->
+                            <!-- Boards Section -->
                             <div class="py-1">
-                                <div class="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Board</div>
-                                <select id="board-switcher" class="w-full px-2 py-1.5 text-xs bg-slate-100 dark:bg-slate-700 border-transparent rounded-md outline-none focus:ring-1 focus:ring-primary-500">
-                                    <option value="" disabled>Select Board</option>
-                                </select>
+                                <div class="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Boards</div>
+                                <div class="px-4">
+                                    <select id="board-switcher" class="w-full py-2 text-sm bg-slate-100 dark:bg-slate-700 border-transparent rounded-md outline-none focus:ring-1 focus:ring-primary-500">
+                                        <option value="" disabled>Select Board</option>
+                                    </select>
+                                </div>
                                 <button id="create-board-btn" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                     </svg>
                                     <span class="flex-1">Create New Board</span>
                                 </button>
+                            </div>
+                            <div class="border-t border-slate-200 dark:border-slate-700"></div>
+                            <!-- Current Board Section -->
+                            <div class="py-1">
+                                <div class="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Board</div>
                                 <button id="members-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20a3 3 0 00-3-3m-3-3V10a5 5 0 015-5h2v5a3 3 0 01-3 3m0 0a3 3 0 00-3 3m0 0v3m0 0h3m0 0H9m-1 3h1" />
@@ -189,8 +196,9 @@
                                 </button>
                             </div>
                             <div class="border-t border-slate-200 dark:border-slate-700"></div>
-                            <!-- Appearance Section -->
+                            <!-- Preference Section -->
                             <div class="py-1">
+                                <div class="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Preference</div>
                                 <button id="theme-toggle-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
                                     <div class="flex items-center gap-2">
                                         <svg id="theme-toggle-dark-icon" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -228,7 +236,7 @@
                 </div>
             </div>
         </header>
-        <div id="board-name" class="pl-6 pt-3 text-sm font-bold">Board Name</div>
+        <div id="board-name" class="pl-6 pt-3 text-sm font-bold"></div>
         <main id="board-container" class="flex-1 overflow-x-auto pt-3 pr-6 pb-6 pl-6 flex gap-6 items-start">
             <!-- Columns will be injected here by JS -->
         </main>

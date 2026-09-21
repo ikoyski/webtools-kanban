@@ -57,11 +57,9 @@ export const UI = {
     inviteRole: document.getElementById('invite-role'),
 
     renderBoard(state, role = 'EDITOR') {
-
         this.boardName.innerHTML = state.name;
 
         this.boardContainer.innerHTML = '';
-
         Object.values(state.columns).forEach(column => {
             const colEl = this.createColumnElement(column, state.cards, role);
             this.boardContainer.appendChild(colEl);
@@ -159,9 +157,9 @@ export const UI = {
         if (!card) return '';
 
         const priorityColors = {
-            'High': 'border-red-500 text-red-600 bg-red-50 dark:bg-red-900/20',
-            'Medium': 'border-yellow-500 text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
-            'Low': 'border-green-500 text-green-600 bg-green-50 dark:bg-green-900/20',
+            'HIGH': 'border-red-500 text-red-600 bg-red-50 dark:bg-red-900/20',
+            'MEDIUM': 'border-yellow-500 text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
+            'LOW': 'border-green-500 text-green-600 bg-green-50 dark:bg-green-900/20',
         };
 
         const priorityClass = priorityColors[card.priority] || priorityColors['Medium'];

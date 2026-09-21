@@ -3,6 +3,7 @@ import { UI } from './ui.js';
 
 class KanbanApp {
     constructor() {
+        this.settings = {};
         this.state = null;
         this.boards = [];
         this.currentBoardId = null;
@@ -11,6 +12,13 @@ class KanbanApp {
     }
 
     async start() {
+        // Load theme from localStorage if available
+        const savedTheme = localStorage.getItem('kanban-theme');
+        if (savedTheme) {
+            this.settings.theme = savedTheme;
+        }
+        UI.setTheme(this.settings.theme);
+        
         this.setupAuthListeners();
 
         if (this.checkAuth()) {
@@ -72,13 +80,6 @@ class KanbanApp {
 
             localStorage.setItem('kanban-active-board', boardId);
             this.updateUrl(boardId);
-
-            // Load theme from localStorage if available
-            const savedTheme = localStorage.getItem('kanban-theme');
-            if (savedTheme) {
-                this.state.settings.theme = savedTheme;
-            }
-
             this.switchView('board');
             this.init();
         } catch (error) {
@@ -114,7 +115,6 @@ class KanbanApp {
     init() {
         // Initial Render
         UI.renderBoard(this.state, this.currentRole);
-        UI.setTheme(this.state.settings.theme);
 
         // Setup user profile in header
         const user = JSON.parse(localStorage.getItem('kanban-user') || '{}');
@@ -159,6 +159,9 @@ class KanbanApp {
                     displayName: authData.displayName,
                     avatarUrl: authData.avatarUrl
                 }));
+
+                const user = JSON.parse(localStorage.getItem('kanban-user') || '{}');
+                UI.updateUserHeader(user);
                 this.boards = await ApiClient.getBoards();
                 await this.resolveActiveBoard();
             } catch (error) {
@@ -180,6 +183,9 @@ class KanbanApp {
                     displayName: authData.displayName,
                     avatarUrl: authData.avatarUrl
                 }));
+
+                const user = JSON.parse(localStorage.getItem('kanban-user') || '{}');
+                UI.updateUserHeader(user);
                 this.boards = await ApiClient.getBoards();
                 await this.resolveActiveBoard();
             } catch (error) {
@@ -281,8 +287,11 @@ class KanbanApp {
         // Theme Toggle from Menu
         UI.themeToggleMenu.onclick = (e) => {
             e.stopPropagation();
-            const newTheme = this.state.settings.theme === 'light' ? 'dark' : 'light';
-            this.state.settings.theme = newTheme;
+            if (!this.settings.theme) {
+                this.settings.theme = 'light';
+            }
+            const newTheme = this.settings.theme === 'light' ? 'dark' : 'light';
+            this.settings.theme = newTheme;
             UI.setTheme(newTheme);
             localStorage.setItem('kanban-theme', newTheme);
             UI.menuDropdown.classList.add('hidden');
@@ -517,8 +526,7 @@ class KanbanApp {
     handleLogout() {
         localStorage.removeItem('kanban-token');
         localStorage.removeItem('kanban-user');
-        this.switchView('auth');
-        this.state = null;
+        window.location.replace("./");
     }
 
     initSortables() {
