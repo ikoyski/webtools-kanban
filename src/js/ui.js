@@ -8,7 +8,7 @@ export const UI = {
     signupForm: document.getElementById('signup-form'),
     showSignupBtn: document.getElementById('show-signup'),
     showLoginBtn: document.getElementById('show-login'),
-
+    boardName: document.getElementById('board-name'),
     boardContainer: document.getElementById('board-container'),
     boardSwitcher: document.getElementById('board-switcher'),
     createBoardBtn: document.getElementById('create-board-btn'),
@@ -45,11 +45,9 @@ export const UI = {
     deleteColConfirm: document.getElementById('delete-col-confirm'),
     deleteColCancel: document.getElementById('delete-col-cancel'),
     closeDeleteColModal: document.getElementById('close-delete-col-modal'),
-    profileModal: document.getElementById('profile-modal'),
     profileName: document.getElementById('profile-name'),
     profileEmail: document.getElementById('profile-email'),
     profileAvatar: document.getElementById('profile-avatar'),
-    closeProfileModalBtn: document.getElementById('close-profile-modal'),
     membersModal: document.getElementById('members-modal'),
     membersList: document.getElementById('members-list'),
     closeMembersModalBtn: document.getElementById('close-members-modal'),
@@ -59,6 +57,9 @@ export const UI = {
     inviteRole: document.getElementById('invite-role'),
 
     renderBoard(state, role = 'EDITOR') {
+
+        this.boardName.innerHTML = state.name;
+
         this.boardContainer.innerHTML = '';
 
         Object.values(state.columns).forEach(column => {
@@ -372,20 +373,6 @@ export const UI = {
         if (this.userRoleBadge) {
             this.userRoleBadge.textContent = role;
         }
-    },
-
-    openProfile(user) {
-        if (!user) return;
-        this.profileName.textContent = user.displayName;
-        this.profileEmail.textContent = user.email;
-        this.profileAvatar.src = user.avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURI(user.displayName);
-
-        this.profileModal.classList.remove('hidden');
-        this.profileModal.classList.add('flex');
-        setTimeout(() => {
-            this.profileModal.querySelector('.relative').classList.remove('scale-95', 'opacity-0');
-            this.profileModal.querySelector('.relative').classList.add('scale-100', 'opacity-100');
-        }, 10);
     },
 
     openMembersModal(members, role) {

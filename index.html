@@ -123,7 +123,7 @@
                         </span>
                         <input type="text" id="search-input" placeholder="Search cards..." class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-2 focus:ring-primary-500 rounded-full text-sm transition-all outline-none">
                     </div>
-                    <!-- User Profile Trigger -->
+                    <!-- Menu -->
                     <div class="relative">
                         <button id="profile-trigger" class="flex items-center gap-2 p-1 pr-3 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors group">
                             <img id="user-avatar" src="https://ui-avatars.com/api/?name=" class="w-8 h-8 rounded-full border-2 border-primary-500" alt="Avatar">
@@ -228,22 +228,10 @@
                 </div>
             </div>
         </header>
-        <main id="board-container" class="flex-1 overflow-x-auto p-6 flex gap-6 items-start">
+        <div id="board-name" class="pl-6 pt-3 text-sm font-bold">Board Name</div>
+        <main id="board-container" class="flex-1 overflow-x-auto pt-3 pr-6 pb-6 pl-6 flex gap-6 items-start">
             <!-- Columns will be injected here by JS -->
         </main>
-    </div>
-
-    <!-- Profile Modal -->
-    <div id="profile-modal" class="fixed inset-0 z-[90] hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
-        <div class="relative bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl transform transition-all scale-95 opacity-0 duration-200 p-8 text-center">
-            <div class="flex flex-col items-center">
-                <img id="profile-avatar" src="" class="w-24 h-24 rounded-full border-4 border-primary-500 shadow-lg mb-4" alt="User Avatar">
-                <h3 id="profile-name" class="text-xl font-bold text-slate-800 dark:text-slate-100">User Name</h3>
-                <p id="profile-email" class="text-slate-500 dark:text-slate-400 text-sm mb-6">user@example.com</p>
-                <button id="close-profile-modal" class="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-lg shadow-md transition-all active:scale-95">Close</button>
-            </div>
-        </div>
     </div>
 
     <!-- Card Modal -->
@@ -275,15 +263,15 @@
                             <label class="block text-sm font-medium mb-1 opacity-70">Priority</label>
                             <div class="flex gap-2">
                                 <label class="flex-1">
-                                    <input type="radio" name="priority" value="Low" class="hidden peer">
+                                    <input type="radio" name="priority" value="LOW" class="hidden peer">
                                     <span class="block text-center py-1 px-2 rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer peer-checked:bg-green-100 peer-checked:text-green-700 peer-checked:border-green-500 dark:peer-checked:bg-green-900/30 dark:peer-checked:text-green-400 text-xs font-medium transition-all">Low</span>
                                 </label>
                                 <label class="flex-1">
-                                    <input type="radio" name="priority" value="Medium" class="hidden peer" checked>
+                                    <input type="radio" name="priority" value="MEDIUM" class="hidden peer" checked>
                                     <span class="block text-center py-1 px-2 rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer peer-checked:bg-yellow-100 peer-checked:text-yellow-700 peer-checked:border-yellow-500 dark:peer-checked:bg-yellow-900/30 dark:peer-checked:text-yellow-400 text-xs font-medium transition-all">Med</span>
                                 </label>
                                 <label class="flex-1">
-                                    <input type="radio" name="priority" value="High" class="hidden peer">
+                                    <input type="radio" name="priority" value="HIGH" class="hidden peer">
                                     <span class="block text-center py-1 px-2 rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer peer-checked:bg-red-100 peer-checked:text-red-700 peer-checked:border-red-500 dark:peer-checked:bg-red-900/30 dark:peer-checked:text-red-400 text-xs font-medium transition-all">High</span>
                                 </label>
                             </div>
@@ -305,7 +293,7 @@
             </div>
         </div>
     </div>
-    <!-- Confirmation Modal -->
+    <!-- Delete Card Confirmation Modal -->
     <div id="confirm-modal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
         <div class="relative bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform transition-all scale-95 opacity-0 duration-200">

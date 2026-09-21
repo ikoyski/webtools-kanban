@@ -7,6 +7,7 @@ class KanbanApp {
         this.boards = [];
         this.currentBoardId = null;
         this.currentRole = null;
+        this.currentBoardName = null;
     }
 
     async start() {
@@ -67,6 +68,7 @@ class KanbanApp {
             this.state = boardData;
             this.currentBoardId = boardId;
             this.currentRole = boardData.role;
+            this.currentBoardName = boardData.name;
 
             localStorage.setItem('kanban-active-board', boardId);
             this.updateUrl(boardId);
@@ -106,6 +108,7 @@ class KanbanApp {
     showEmptyState() {
         this.switchView('board');
         UI.renderEmptyState();
+        this.setupEventListeners();
     }
 
     init() {
@@ -156,7 +159,8 @@ class KanbanApp {
                     displayName: authData.displayName,
                     avatarUrl: authData.avatarUrl
                 }));
-                await this.loadBoard();
+                this.boards = await ApiClient.getBoards();
+                await this.resolveActiveBoard();
             } catch (error) {
                 alert('Login failed: ' + error.message);
             }
@@ -176,7 +180,8 @@ class KanbanApp {
                     displayName: authData.displayName,
                     avatarUrl: authData.avatarUrl
                 }));
-                await this.loadBoard();
+                this.boards = await ApiClient.getBoards();
+                await this.resolveActiveBoard();
             } catch (error) {
                 alert('Signup failed: ' + error.message);
             }
@@ -198,7 +203,7 @@ class KanbanApp {
                 alert('Failed to create board: ' + error.message);
             }
         }
-    },
+    }
 
     setupEventListeners() {
         // Board Switcher
@@ -270,24 +275,6 @@ class KanbanApp {
         UI.menuToggle.onclick = (e) => {
             e.stopPropagation();
             UI.menuDropdown.classList.toggle('hidden');
-        };
-
-        // Profile Info Click (Open Profile Modal)
-        UI.menuDropdown.onclick = (e) => {
-            const userInfo = e.target.closest('.bg-slate-50/50');
-            if (userInfo) {
-                const user = JSON.parse(localStorage.getItem('kanban-user') || '{}');
-                UI.openProfile(user);
-            }
-        };
-
-        // Profile Info Click (Open Profile Modal)
-        UI.menuDropdown.onclick = (e) => {
-            const userInfo = e.target.closest('.bg-slate-50/50');
-            if (userInfo) {
-                const user = JSON.parse(localStorage.getItem('kanban-user') || '{}');
-                UI.openProfile(user);
-            }
         };
 
 
@@ -434,7 +421,6 @@ class KanbanApp {
             if (e.key === 'Escape') {
                 UI.closeModal();
                 UI.closeConfirm();
-                UI.closeProfile();
             }
         };
 
