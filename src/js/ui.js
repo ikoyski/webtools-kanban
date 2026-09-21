@@ -57,7 +57,14 @@ export const UI = {
     inviteRole: document.getElementById('invite-role'),
 
     renderBoard(state, role = 'EDITOR') {
-        this.boardName.innerHTML = state.name;
+        let roleDisplay = ' (owned)';
+        if (role === 'EDITOR') {
+            roleDisplay = ' (can edit)';
+        } else if (role === 'VIEWER') {
+            roleDisplay = ' (view only)';
+        }
+        
+        this.boardName.innerHTML = state.name + roleDisplay;
 
         this.boardContainer.innerHTML = '';
         Object.values(state.columns).forEach(column => {
