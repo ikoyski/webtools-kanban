@@ -50,17 +50,17 @@ class ApiClient {
     }
   }
 
-  static async login(email, password) {
+  static async login(email, password, turnstileToken) {
     return this.request('/v1/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, turnstileToken }),
     });
   }
 
-  static async signup(email, password, displayName) {
+  static async signup(email, password, displayName, turnstileToken) {
     return this.request('/v1/auth/signup', {
       method: 'POST',
-      body: JSON.stringify({ email, password, displayName }),
+      body: JSON.stringify({ email, password, displayName, turnstileToken }),
     });
   }
 

@@ -151,8 +151,15 @@ class KanbanApp {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
+
+            const turnstileToken = typeof turnstile !== 'undefined' ? turnstile.getResponse() : null;
+            if (!turnstileToken) {
+                alert('Please complete the security check.');
+                return;
+            }
+
             try {
-                const authData = await ApiClient.login(email, password);
+                const authData = await ApiClient.login(email, password, turnstileToken);
                 localStorage.setItem('kanban-token', authData.token);
                 localStorage.setItem('kanban-user', JSON.stringify({
                     email: authData.email,
@@ -175,8 +182,15 @@ class KanbanApp {
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
             const displayName = document.getElementById('signup-name').value;
+
+            const turnstileToken = typeof turnstile !== 'undefined' ? turnstile.getResponse() : null;
+            if (!turnstileToken) {
+                alert('Please complete the security check.');
+                return;
+            }
+
             try {
-                const authData = await ApiClient.signup(email, password, displayName);
+                const authData = await ApiClient.signup(email, password, displayName, turnstileToken);
                 localStorage.setItem('kanban-token', authData.token);
                 localStorage.setItem('kanban-user', JSON.stringify({
                     email: authData.email,
