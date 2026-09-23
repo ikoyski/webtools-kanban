@@ -33,3 +33,4 @@ The project is a vanilla JavaScript implementation of a Kanban board using ES6 m
 ### Key Dependencies
 - **Tailwind CSS**: Used for responsive styling.
 - **SortableJS**: Implements the drag-and-drop functionality for moving cards between columns.
+- **Cloudflare Turnstile**: Provides bot protection for authentication forms.
