@@ -151,8 +151,9 @@ class KanbanApp {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
+            const turnstile = document.querySelector('[name="cf-turnstile-response"]').value;
 
-            const turnstileToken = typeof turnstile !== 'undefined' ? turnstile.getResponse() : null;
+            const turnstileToken = typeof turnstile !== 'undefined' ? turnstile : null;
             if (!turnstileToken) {
                 alert('Please complete the security check.');
                 return;
