@@ -14,6 +14,8 @@ A modern, responsive Kanban board implementation featuring drag-and-drop functio
 - **Responsive Design**: Works on desktops, tablets, and mobile devices.
 - **Card Management**: Add, edit, and delete cards with priority levels, due dates, and custom labels.
 - **Column Management**: Create new columns, rename existing ones, and delete columns with an integrated card transfer mechanism to prevent data loss.
+- **Optimistic UI**: Instant visual feedback for actions like moving cards, with background synchronization to the API.
+- **Bot Protection**: Integration with Cloudflare Turnstile to secure Login and Signup forms against automated attacks.
 - **Data Portability**: Export your entire board state to a JSON file and import it back to restore your data or move it between browsers.
 - **Search Function**: Quickly filter cards across all columns by keyword (title, description, or labels).
 
@@ -40,6 +42,7 @@ A modern, responsive Kanban board implementation featuring drag-and-drop functio
 - **Tailwind CSS** (via CDN)
 - **JavaScript (ES6 Modules)**
 - **SortableJS** (for drag-and-drop)
+- **Cloudflare Turnstile** (for bot protection)
 
 ## Getting Started
 
