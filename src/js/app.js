@@ -795,7 +795,7 @@ class KanbanApp {
                 }
             }
         });
-    },
+    }
 
     async handleDelete() {
         if (this.currentRole === 'VIEWER') {
