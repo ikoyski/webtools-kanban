@@ -25,6 +25,7 @@ export const UI = {
     userName: document.getElementById('user-name'),
     userAvatar: document.getElementById('user-avatar'),
     userRoleBadge: document.getElementById('user-role-badge'),
+    renameBoardBtn: document.getElementById('rename-board-btn'),
     menuUserName: document.getElementById('menu-user-name'),
     menuUserEmail: document.getElementById('menu-user-email'),
     importFile: document.getElementById('import-file'),
@@ -63,14 +64,16 @@ export const UI = {
         } else if (role === 'VIEWER') {
             roleDisplay = ' (view only)';
         }
-        
+
         this.boardName.innerHTML = state.name + roleDisplay;
 
         this.boardContainer.innerHTML = '';
-        Object.values(state.columns).forEach(column => {
-            const colEl = this.createColumnElement(column, state.cards, role);
-            this.boardContainer.appendChild(colEl);
-        });
+        Object.values(state.columns)
+            .sort((a, b) => a.position - b.position)
+            .forEach(column => {
+                const colEl = this.createColumnElement(column, state.cards, role);
+                this.boardContainer.appendChild(colEl);
+            });
     },
 
     renderEmptyState() {
@@ -100,6 +103,7 @@ export const UI = {
         const div = document.createElement('div');
         div.className = 'group flex-shrink-0 w-[300px] flex flex-col max-h-full bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700';
         div.id = `col-${column.id}`;
+        div.dataset.columnId = column.id;
 
         const cardCount = column.cardIds.length;
         const isViewer = role === 'VIEWER';
@@ -107,6 +111,11 @@ export const UI = {
         div.innerHTML = `
             <div class="flex items-center justify-between mb-4 px-1">
                 <div class="flex items-center gap-2">
+                    <div class="column-drag-handle cursor-grab active:cursor-grabbing p-1 text-slate-400 hover:text-primary-600 transition-colors rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 ${isViewer ? 'hidden' : ''}" title="Drag to reorder column">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                        </svg>
+                    </div>
                     <h3 class="font-bold text-slate-700 dark:text-slate-200">${column.title}</h3>
                     <div class="flex gap-1 opacity-60 hover:opacity-100 transition-opacity ${isViewer ? 'hidden' : ''}">
                         <button class="rename-col-btn text-slate-400 hover:text-primary-600 transition-colors" title="Rename Column">
@@ -196,6 +205,14 @@ export const UI = {
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                                 <span>${card.dueDate}</span>
+                            </div>
+                        ` : ''}
+                        ${card.commentCount !== undefined ? `
+                            <div class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                </svg>
+                                <span>${card.commentCount}</span>
                             </div>
                         ` : ''}
                     </div>
@@ -420,6 +437,245 @@ export const UI = {
         setTimeout(() => {
             this.membersModal.classList.add('hidden');
             this.membersModal.classList.remove('flex');
+        }, 200);
+    },
+
+    startInlineEdit(displayEl, {
+        value,
+        multiline = false,
+        onSave,
+    }) {
+        const input = document.createElement(multiline ? 'textarea' : 'input');
+        input.value = value;
+        input.className = 'inline-edit-input px-2 py-1 rounded border border-primary-300 dark:border-primary-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm';
+        if (multiline) {
+            input.className += ' w-full h-24 resize-none';
+        } else {
+            input.className += ' w-full';
+        }
+
+        const saveBtn = document.createElement('button');
+        saveBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`;
+        saveBtn.className = 'p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>`;
+        cancelBtn.className = 'p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors';
+
+        const wrapper = document.createElement(multiline ? 'div' : 'span');
+        wrapper.className = multiline ? 'flex flex-col gap-2 w-full' : 'flex items-center gap-1 w-full';
+
+        if (multiline) {
+            const btnRow = document.createElement('div');
+            btnRow.className = 'flex justify-end gap-2';
+            btnRow.append(saveBtn, cancelBtn);
+            wrapper.append(input, btnRow);
+        } else {
+            wrapper.append(input, saveBtn, cancelBtn);
+        }
+
+        const originalEl = displayEl.cloneNode(true);
+        displayEl.replaceWith(wrapper);
+        input.focus();
+
+        cancelBtn.onclick = () => wrapper.replaceWith(originalEl);
+
+        const handleSave = async (e) => {
+            if (e?.type === 'keydown' && e.key !== 'Enter') return;
+            if (e?.type === 'keydown' && multiline && !e.metaKey && !e.ctrlKey) return;
+
+            try {
+                await onSave(input.value);
+            } catch (err) {
+                wrapper.replaceWith(originalEl);
+                alert('Failed to save: ' + err.message);
+            }
+        };
+
+        saveBtn.onclick = handleSave;
+        input.onkeydown = (e) => {
+            if (e.key === 'Escape') wrapper.replaceWith(originalEl);
+            if (e.key === 'Enter') handleSave(e);
+        };
+    },
+
+    openCardDetail(card, role, callbacks = {}) {
+        const modal = document.getElementById('card-detail-modal');
+        const content = modal.querySelector('.relative');
+
+        content.innerHTML = `
+            <div class="flex flex-col h-full">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Card Details</h2>
+                    <button class="close-detail-btn text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto space-y-6 pr-2">
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Title</label>
+                        <div class="detail-title text-lg font-bold text-slate-800 dark:text-slate-100 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded transition-colors">${card.title}</div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-4">
+                        <div class="space-y-1">
+                            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Priority</label>
+                            <div class="detail-priority flex gap-2 cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                ${['LOW', 'MEDIUM', 'HIGH'].map(p => `
+                                    <span class="px-2 py-1 text-xs font-bold rounded border ${p === card.priority ? 'bg-primary-100 border-primary-500 text-primary-700 dark:bg-primary-900/30' : 'bg-slate-100 border-slate-300 text-slate-600 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-400'}">${p}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Due Date</label>
+                            <div class="detail-date text-sm text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded transition-colors">${card.dueDate || 'No date set'}</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Labels</label>
+                        <div class="detail-labels flex flex-wrap gap-1 cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            ${card.labels.length ? card.labels.map(l => `<span class="text-xs px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400">${l}</span>`).join(' ') : '<span class="text-sm text-slate-400 italic">No labels - click to add</span>'}
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Description</label>
+                        <div class="detail-description text-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded transition-colors whitespace-pre-wrap">${card.description || 'No description - click to add one'}</div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Comments</label>
+                        <div class="comments-list space-y-3">
+                            <div class="text-center py-4 text-sm text-slate-400">Loading comments...</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <textarea id="comment-input" class="flex-1 p-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none resize-none h-20" placeholder="Write a comment..."></textarea>
+                            <button id="add-comment-btn" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-lg transition-all active:scale-95">Comment</button>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto pt-6 flex justify-between items-center border-t border-slate-200 dark:border-slate-700">
+                        <div class="flex gap-3">
+                            <button id="archive-card-btn" class="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Archive</button>
+                            <button id="delete-card-btn" class="px-4 py-2 text-sm font-semibold text-red-500 hover:text-red-700 transition-colors">Delete</button>
+                        </div>
+                        <button class="close-detail-btn px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+
+        // Attach edit listeners
+        if (role !== 'VIEWER') {
+            const titleEl = content.querySelector('.detail-title');
+            titleEl.onclick = () => callbacks?.onEditTitle?.(titleEl, card);
+            const descEl = content.querySelector('.detail-description');
+            descEl.onclick = () => callbacks?.onEditDescription?.(descEl, card);
+            const labelsEl = content.querySelector('.detail-labels');
+            labelsEl.onclick = () => callbacks?.onEditLabels?.(labelsEl, card);
+            const dateEl = content.querySelector('.detail-date');
+            dateEl.onclick = () => callbacks?.onEditDate?.(dateEl, card);
+        }
+
+        // Attach close listeners
+        modal.querySelectorAll('.close-detail-btn').forEach(btn => {
+            btn.onclick = () => this.closeDetailModal();
+        });
+    },
+
+    closeDetailModal() {
+        const modal = document.getElementById('card-detail-modal');
+        const content = modal.querySelector('.relative');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
+    },
+
+    renderComments(container, comments) {
+        if (!comments || comments.length === 0) {
+            container.innerHTML = '<div class="text-center py-4 text-sm text-slate-400">No comments yet. Be the first to add one!</div>';
+            return;
+        }
+
+        container.innerHTML = comments.map(c => `
+            <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1 group">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200">${c.userName}</span>
+                        <span class="text-[10px] text-slate-400">${new Date(c.createdAt).toLocaleString()}</span>
+                    </div>
+                    <button class="delete-comment-btn text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100" data-comment-id="${c.id}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                </div>
+                <div class="text-sm text-slate-600 dark:text-slate-400">${c.content}</div>
+            </div>
+        `).join('');
+    },
+
+    renderArchivedCards(container, archivedCards, role, onRestore) {
+        if (!archivedCards || archivedCards.length === 0) {
+            container.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">No archived cards found.</div>';
+            return;
+        }
+
+        container.innerHTML = archivedCards.map(card => `
+            <div class="p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-3">
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-slate-100 line-clamp-1">${card.title}</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">${card.description || 'No description'}</p>
+                </div>
+                <div class="flex items-center justify-between mt-auto pt-3 border-t border-slate-100 dark:border-slate-700">
+                    <span class="text-[10px] text-slate-400">Archived: ${card.archivedAt ? new Date(card.archivedAt).toLocaleDateString() : 'Unknown'}</span>
+                    ${role !== 'VIEWER' ? `
+                        <button class="restore-card-btn text-xs font-bold text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors" data-card-id="${card.id}">
+                            Restore
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+
+        if (role !== 'VIEWER') {
+            container.querySelectorAll('.restore-card-btn').forEach(btn => {
+                btn.onclick = () => onRestore(btn.dataset.cardId);
+            });
+        }
+    },
+
+    openArchivedModal() {
+        const modal = document.getElementById('archived-cards-modal');
+        const content = modal.querySelector('.relative');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    },
+
+    closeArchivedModal() {
+        const modal = document.getElementById('archived-cards-modal');
+        const content = modal.querySelector('.relative');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }, 200);
     }
 }

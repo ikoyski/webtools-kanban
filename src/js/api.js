@@ -135,6 +135,13 @@ class ApiClient {
     });
   }
 
+  static async reorderColumns(columnPositions) {
+    return this.request('/v1/columns/reorder', {
+      method: 'PATCH',
+      body: JSON.stringify({ columns: columnPositions }),
+    });
+  }
+
   static async moveCard(cardId, columnId, position) {
     return this.request(`/v1/cards/${cardId}/move`, {
       method: 'PATCH',
@@ -178,6 +185,41 @@ class ApiClient {
     return this.request(`/v1/boards/${boardId}/members/${userId}`, {
       method: 'DELETE',
     });
+  }
+
+  // Card Comments
+  static async getComments(cardId) {
+    return this.request(`/v1/comments/card/${cardId}`);
+  }
+
+  static async addComment(cardId, content) {
+    return this.request(`/v1/comments/card/${cardId}`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    });
+  }
+
+  static async deleteComment(commentId) {
+    return this.request(`/v1/comments/${commentId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Card Archive
+  static async archiveCard(cardId) {
+    return this.request(`/v1/cards/${cardId}/archive`, {
+      method: 'POST',
+    });
+  }
+
+  static async restoreCard(cardId) {
+    return this.request(`/v1/cards/${cardId}/restore`, {
+      method: 'POST',
+    });
+  }
+
+  static async getArchivedCards(boardId) {
+    return this.request(`/v1/cards/board/${boardId}/archived`);
   }
 }
 

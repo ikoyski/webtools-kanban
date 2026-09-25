@@ -581,6 +581,22 @@ class KanbanApp {
             UI.closeDeleteColumnModal();
             this.pendingDeleteColId = null;
         };
+
+        // Archive Menu handler
+        document.getElementById('archived-cards-menu').onclick = async (e) => {
+            e.stopPropagation();
+            try {
+                const archivedCards = await ApiClient.getArchivedCards(this.currentBoardId);
+                UI.openArchivedModal();
+                const listEl = document.getElementById('archived-cards-list');
+                UI.renderArchivedCards(listEl, archivedCards, this.currentRole, (cardId) => this.handleRestoreCard(cardId));
+            } catch (error) {
+                alert('Failed to load archived cards: ' + error.message);
+            }
+            UI.menuDropdown.classList.add('hidden');
+        };
+
+        document.getElementById('close-archived-modal').onclick = () => UI.closeArchivedModal();
     }
 
     handleLogout() {
@@ -887,6 +903,21 @@ class KanbanApp {
                 }
             }
         };
+
+        // Handle Archive Card
+        const archiveBtn = document.getElementById('archive-card-btn');
+        if (archiveBtn) {
+            archiveBtn.onclick = () => this.handleArchiveCard(cardId);
+        }
+
+        // Handle Delete Card from detail
+        const deleteCardBtn = document.getElementById('delete-card-btn');
+        if (deleteCardBtn) {
+            deleteCardBtn.onclick = () => {
+                this.pendingDeleteId = cardId;
+                UI.openConfirm(cardId);
+            };
+        }
     }
 
     async refreshComments(cardId) {
@@ -914,6 +945,22 @@ class KanbanApp {
             UI.closeDetailModal();
         } catch (error) {
             alert('Failed to archive card: ' + error.message);
+        }
+    }
+
+    async handleRestoreCard(cardId) {
+        if (this.currentRole === 'VIEWER') {
+            alert('You do not have permission to restore cards.');
+            return;
+        }
+
+        try {
+            await ApiClient.restoreCard(cardId);
+            // Reload board to see restored card
+            await this.loadBoard(this.currentBoardId);
+            UI.closeArchivedModal();
+        } catch (error) {
+            alert('Failed to restore card: ' + error.message);
         }
     }
 
