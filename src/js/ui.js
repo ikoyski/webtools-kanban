@@ -66,6 +66,7 @@ export const UI = {
         }
 
         this.boardName.innerHTML = state.name + roleDisplay;
+        this.renameBoardBtn.style.visibility = (role === 'VIEWER') ? "hidden" : '';
 
         this.boardContainer.innerHTML = '';
         Object.values(state.columns)
