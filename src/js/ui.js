@@ -443,9 +443,11 @@ export const UI = {
     startInlineEdit(displayEl, {
         value,
         multiline = false,
+        type = 'text',
         onSave,
     }) {
         const input = document.createElement(multiline ? 'textarea' : 'input');
+        if (!multiline) input.type = type;
         input.value = value;
         input.className = 'inline-edit-input px-2 py-1 rounded border border-primary-300 dark:border-primary-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm';
         if (multiline) {
@@ -501,79 +503,78 @@ export const UI = {
 
     openCardDetail(card, role, callbacks = {}) {
         const modal = document.getElementById('card-detail-modal');
-        const content = modal.querySelector('.relative');
+        const box = modal.querySelector('.relative');
+        const content = document.getElementById('card-detail-body');
 
         content.innerHTML = `
-            <div class="flex flex-col h-full">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Card Details</h2>
-                    <button class="close-detail-btn text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Card Details</h2>
+                <button class="close-detail-btn text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="detail-scroll max-h-[65vh] overflow-y-auto space-y-6 pr-2">
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Title</label>
+                    <div class="detail-title text-lg font-bold text-slate-800 dark:text-slate-100 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded transition-colors">${card.title}</div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto space-y-6 pr-2">
+                <div class="flex flex-wrap gap-4">
                     <div class="space-y-1">
-                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Title</label>
-                        <div class="detail-title text-lg font-bold text-slate-800 dark:text-slate-100 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded transition-colors">${card.title}</div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-4">
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Priority</label>
-                            <div class="detail-priority flex gap-2 cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                ${['LOW', 'MEDIUM', 'HIGH'].map(p => `
-                                    <span class="px-2 py-1 text-xs font-bold rounded border ${p === card.priority ? 'bg-primary-100 border-primary-500 text-primary-700 dark:bg-primary-900/30' : 'bg-slate-100 border-slate-300 text-slate-600 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-400'}">${p}</span>
-                                `).join('')}
-                            </div>
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Due Date</label>
-                            <div class="detail-date text-sm text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded transition-colors">${card.dueDate || 'No date set'}</div>
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Priority</label>
+                        <div class="detail-priority flex gap-2 cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            ${['LOW', 'MEDIUM', 'HIGH'].map(p => `
+                                <span data-priority="${p}" class="px-2 py-1 text-xs font-bold rounded border cursor-pointer ${p === card.priority ? 'bg-primary-100 border-primary-500 text-primary-700 dark:bg-primary-900/30' : 'bg-slate-100 border-slate-300 text-slate-600 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-400 hover:border-primary-400'}">${p}</span>
+                            `).join('')}
                         </div>
                     </div>
-
                     <div class="space-y-1">
-                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Labels</label>
-                        <div class="detail-labels flex flex-wrap gap-1 cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                            ${card.labels.length ? card.labels.map(l => `<span class="text-xs px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400">${l}</span>`).join(' ') : '<span class="text-sm text-slate-400 italic">No labels - click to add</span>'}
-                        </div>
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Description</label>
-                        <div class="detail-description text-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded transition-colors whitespace-pre-wrap">${card.description || 'No description - click to add one'}</div>
-                    </div>
-
-                    <div class="pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
-                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Comments</label>
-                        <div class="comments-list space-y-3">
-                            <div class="text-center py-4 text-sm text-slate-400">Loading comments...</div>
-                        </div>
-                        <div class="flex gap-2">
-                            <textarea id="comment-input" class="flex-1 p-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none resize-none h-20" placeholder="Write a comment..."></textarea>
-                            <button id="add-comment-btn" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-lg transition-all active:scale-95">Comment</button>
-                        </div>
-                    </div>
-
-                    <div class="mt-auto pt-6 flex justify-between items-center border-t border-slate-200 dark:border-slate-700">
-                        <div class="flex gap-3">
-                            <button id="archive-card-btn" class="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Archive</button>
-                            <button id="delete-card-btn" class="px-4 py-2 text-sm font-semibold text-red-500 hover:text-red-700 transition-colors">Delete</button>
-                        </div>
-                        <button class="close-detail-btn px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">Close</button>
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Due Date</label>
+                        <div class="detail-date text-sm text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded transition-colors">${card.dueDate || 'No date set'}</div>
                     </div>
                 </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Labels</label>
+                    <div class="detail-labels flex flex-wrap gap-1 cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        ${card.labels.length ? card.labels.map(l => `<span class="text-xs px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400">${l}</span>`).join(' ') : '<span class="text-sm text-slate-400 italic">No labels - click to add</span>'}
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Description</label>
+                    <div class="detail-description text-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded transition-colors whitespace-pre-wrap">${card.description || 'No description - click to add one'}</div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Comments</label>
+                    <div class="comments-list space-y-3">
+                        <div class="text-center py-4 text-sm text-slate-400">Loading comments...</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <textarea id="comment-input" class="flex-1 p-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none resize-none h-20" placeholder="Write a comment..."></textarea>
+                        <button id="add-comment-btn" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-lg transition-all active:scale-95">Comment</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6 mt-6 flex justify-between items-center border-t border-slate-200 dark:border-slate-700">
+                <div class="flex gap-3">
+                    <button id="archive-card-btn" class="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Archive</button>
+                    <button id="delete-card-btn" class="px-4 py-2 text-sm font-semibold text-red-500 hover:text-red-700 transition-colors">Delete</button>
+                </div>
+                <button class="close-detail-btn px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">Close</button>
             </div>
         `;
 
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         setTimeout(() => {
-            content.classList.remove('scale-95', 'opacity-0');
-            content.classList.add('scale-100', 'opacity-100');
+            box.classList.remove('scale-95', 'opacity-0');
+            box.classList.add('scale-100', 'opacity-100');
         }, 10);
 
         // Attach edit listeners
@@ -586,6 +587,9 @@ export const UI = {
             labelsEl.onclick = () => callbacks?.onEditLabels?.(labelsEl, card);
             const dateEl = content.querySelector('.detail-date');
             dateEl.onclick = () => callbacks?.onEditDate?.(dateEl, card);
+            content.querySelectorAll('.detail-priority span').forEach(span => {
+                span.onclick = () => callbacks?.onEditPriority?.(span.dataset.priority, card);
+            });
         }
 
         // Attach close listeners

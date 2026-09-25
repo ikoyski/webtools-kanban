@@ -607,7 +607,7 @@ class KanbanApp {
         });
 
         Object.values(this.state.columns).forEach(column => {
-            const el = document.querySelector(`[data-column-id="${column.id}"]`);
+            const el = document.querySelector(`.card-list[data-column-id="${column.id}"]`);
             if (!el) {
                 console.warn(`Column element not found for id: ${column.id}`);
             }
@@ -626,6 +626,34 @@ class KanbanApp {
                 }
             });
         });
+    }
+
+    cardDetailCallbacks() {
+        return {
+            onEditTitle: (el, card) => this.handleDetailEdit(el, card, 'title'),
+            onEditDescription: (el, card) => this.handleDetailEdit(el, card, 'description', true),
+            onEditLabels: (el, card) => this.handleDetailEdit(el, card, 'labels'),
+            onEditDate: (el, card) => this.handleDetailEdit(el, card, 'dueDate', false, 'date'),
+            onEditPriority: (priority, card) => this.handleDetailPriorityChange(priority, card),
+        };
+    }
+
+    async handleDetailPriorityChange(newPriority, card) {
+        if (newPriority === card.priority) return;
+
+        const oldCard = { ...card };
+        this.state.cards[card.id] = { ...card, priority: newPriority };
+
+        UI.renderBoard(this.state);
+        UI.openCardDetail(this.state.cards[card.id], this.currentRole, this.cardDetailCallbacks());
+
+        try {
+            await ApiClient.updateCard(card.id, { priority: newPriority });
+        } catch (error) {
+            this.state.cards[card.id] = oldCard;
+            UI.openCardDetail(this.state.cards[card.id], this.currentRole, this.cardDetailCallbacks());
+            alert('Failed to save: ' + error.message);
+        }
     }
 
     async handleColumnSortEnd(evt) {
@@ -756,13 +784,14 @@ class KanbanApp {
         }
     }
 
-    async handleDetailEdit(el, card, field, multiline = false) {
+    async handleDetailEdit(el, card, field, multiline = false, type = 'text') {
         const currentValue = card[field];
         const formattedValue = field === 'labels' ? currentValue.join(', ') : currentValue;
 
         await UI.startInlineEdit(el, {
             value: formattedValue || '',
             multiline: multiline,
+            type: type,
             onSave: async (newValue) => {
                 let updatedValue = newValue;
                 if (field === 'labels') {
@@ -774,23 +803,13 @@ class KanbanApp {
 
                 // Update UI in detail modal
                 UI.renderBoard(this.state);
-                UI.openCardDetail(this.state.cards[card.id], this.currentRole, {
-                    onEditTitle: (el, card) => this.handleDetailEdit(el, card, 'title'),
-                    onEditDescription: (el, card) => this.handleDetailEdit(el, card, 'description', true),
-                    onEditLabels: (el, card) => this.handleDetailEdit(el, card, 'labels'),
-                    onEditDate: (el, card) => this.handleDetailEdit(el, card, 'dueDate'),
-                });
+                UI.openCardDetail(this.state.cards[card.id], this.currentRole, this.cardDetailCallbacks());
 
                 try {
                     await ApiClient.updateCard(card.id, { [field]: updatedValue });
                 } catch (error) {
                     this.state.cards[card.id] = oldCard;
-                    UI.openCardDetail(this.state.cards[card.id], this.currentRole, {
-                        onEditTitle: (el, card) => this.handleDetailEdit(el, card, 'title'),
-                        onEditDescription: (el, card) => this.handleDetailEdit(el, card, 'description', true),
-                        onEditLabels: (el, card) => this.handleDetailEdit(el, card, 'labels'),
-                        onEditDate: (el, card) => this.handleDetailEdit(el, card, 'dueDate'),
-                    });
+                    UI.openCardDetail(this.state.cards[card.id], this.currentRole, this.cardDetailCallbacks());
                     alert('Failed to save: ' + error.message);
                 }
             }
@@ -830,12 +849,7 @@ class KanbanApp {
 
     async handleOpenCardDetail(cardId) {
         const card = this.state.cards[cardId];
-        UI.openCardDetail(card, this.currentRole, {
-            onEditTitle: (el, card) => this.handleDetailEdit(el, card, 'title'),
-            onEditDescription: (el, card) => this.handleDetailEdit(el, card, 'description', true),
-            onEditLabels: (el, card) => this.handleDetailEdit(el, card, 'labels'),
-            onEditDate: (el, card) => this.handleDetailEdit(el, card, 'dueDate'),
-        });
+        UI.openCardDetail(this.state.cards[card.id], this.currentRole, this.cardDetailCallbacks());
 
         // Load comments
         const commentsListEl = document.querySelector('.comments-list');
