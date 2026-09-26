@@ -400,6 +400,21 @@ class KanbanApp {
             UI.menuDropdown.classList.add('hidden');
         };
 
+        // Archived Cards Menu
+        document.getElementById('archived-cards-menu').onclick = async (e) => {
+            e.stopPropagation();
+            UI.menuDropdown.classList.add('hidden');
+            await this.openArchivedCardsModal();
+        };
+
+        // Close Archived Cards Modal
+        document.getElementById('close-archived-modal').onclick = () => UI.closeArchivedModal();
+
+        // Close Archived Cards Modal when clicking outside
+        document.getElementById('archived-cards-modal').onclick = (e) => {
+            if (e.target.id === 'archived-cards-modal') UI.closeArchivedModal();
+        };
+
         // Logout Handler
         UI.logoutMenu.onclick = (e) => {
             e.stopPropagation();
@@ -635,6 +650,11 @@ class KanbanApp {
             onEditLabels: (el, card) => this.handleDetailEdit(el, card, 'labels'),
             onEditDate: (el, card) => this.handleDetailEdit(el, card, 'dueDate', false, 'date'),
             onEditPriority: (priority, card) => this.handleDetailPriorityChange(priority, card),
+            onArchive: (cardId) => this.handleArchiveCard(cardId),
+            onDelete: (cardId) => {
+                this.pendingDeleteId = cardId;
+                UI.openConfirm(cardId);
+            },
         };
     }
 
@@ -835,6 +855,7 @@ class KanbanApp {
         UI.renderBoard(this.state);
         this.initSortables();
         UI.closeConfirm();
+        UI.closeDetailModal();
 
         try {
             await ApiClient.deleteCard(cardId);
@@ -928,6 +949,39 @@ class KanbanApp {
             UI.closeDetailModal();
         } catch (error) {
             alert('Failed to archive card: ' + error.message);
+        }
+    }
+
+    async openArchivedCardsModal() {
+        if (!this.currentBoardId) return;
+        UI.openArchivedModal();
+        await this.refreshArchivedCards();
+    }
+
+    async refreshArchivedCards() {
+        const listEl = document.getElementById('archived-cards-list');
+        if (!listEl) return;
+        listEl.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Loading...</div>';
+        try {
+            const archivedCards = await ApiClient.getArchivedCards(this.currentBoardId);
+            UI.renderArchivedCards(listEl, archivedCards, this.currentRole, (cardId) => this.handleRestoreCard(cardId));
+        } catch (error) {
+            listEl.innerHTML = `<div class="col-span-full text-center py-12 text-red-500">Failed to load archived cards: ${error.message}</div>`;
+        }
+    }
+
+    async handleRestoreCard(cardId) {
+        if (this.currentRole === 'VIEWER') {
+            alert('You do not have permission to restore cards.');
+            return;
+        }
+
+        try {
+            await ApiClient.restoreCard(cardId);
+            await this.loadBoard(this.currentBoardId);
+            await this.refreshArchivedCards();
+        } catch (error) {
+            alert('Failed to restore card: ' + error.message);
         }
     }
 

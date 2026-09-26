@@ -447,6 +447,11 @@ export const UI = {
         type = 'text',
         onSave,
     }) {
+        // Ignore re-clicks while this field is already being edited, so a click
+        // on the (still-live) display element can't nest a second edit UI inside it.
+        if (displayEl.dataset.editing === 'true') return;
+        displayEl.dataset.editing = 'true';
+
         const input = document.createElement(multiline ? 'textarea' : 'input');
         if (!multiline) input.type = type;
         input.value = value;
@@ -477,11 +482,20 @@ export const UI = {
             wrapper.append(input, saveBtn, cancelBtn);
         }
 
-        const originalEl = displayEl.cloneNode(true);
-        displayEl.replaceWith(wrapper);
+        // Swap displayEl's CONTENT for the edit UI, but keep displayEl itself in
+        // the DOM the whole time. This is what keeps its click-to-edit handler
+        // alive across cancel/retry cycles, instead of only working once.
+        const originalHTML = displayEl.innerHTML;
+        displayEl.innerHTML = '';
+        displayEl.appendChild(wrapper);
         input.focus();
 
-        cancelBtn.onclick = () => wrapper.replaceWith(originalEl);
+        const restore = () => {
+            displayEl.innerHTML = originalHTML;
+            delete displayEl.dataset.editing;
+        };
+
+        cancelBtn.onclick = restore;
 
         const handleSave = async (e) => {
             if (e?.type === 'keydown' && e.key !== 'Enter') return;
@@ -489,15 +503,16 @@ export const UI = {
 
             try {
                 await onSave(input.value);
+                delete displayEl.dataset.editing;
             } catch (err) {
-                wrapper.replaceWith(originalEl);
+                restore();
                 alert('Failed to save: ' + err.message);
             }
         };
 
         saveBtn.onclick = handleSave;
         input.onkeydown = (e) => {
-            if (e.key === 'Escape') wrapper.replaceWith(originalEl);
+            if (e.key === 'Escape') restore();
             if (e.key === 'Enter') handleSave(e);
         };
     },
@@ -519,13 +534,18 @@ export const UI = {
 
             <div class="detail-scroll max-h-[65vh] overflow-y-auto space-y-6 pr-2">
                 <div class="space-y-1">
-                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Title</label>
+                    <label class="text-xs font-semibold text-slate-500 tracking-wider">Title</label>
                     <div class="detail-title text-lg font-bold text-slate-800 dark:text-slate-100 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded transition-colors">${card.title}</div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-500 tracking-wider">Description</label>
+                    <div class="detail-description text-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded transition-colors whitespace-pre-wrap">${card.description || 'No description - click to add one'}</div>
                 </div>
 
                 <div class="flex flex-wrap gap-4">
                     <div class="space-y-1">
-                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Priority</label>
+                        <label class="text-xs font-semibold text-slate-500 tracking-wider">Priority</label>
                         <div class="detail-priority flex gap-2 cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                             ${['LOW', 'MEDIUM', 'HIGH'].map(p => `
                                 <span data-priority="${p}" class="px-2 py-1 text-xs font-bold rounded border cursor-pointer ${p === card.priority ? 'bg-primary-100 border-primary-500 text-primary-700 dark:bg-primary-900/30' : 'bg-slate-100 border-slate-300 text-slate-600 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-400 hover:border-primary-400'}">${p}</span>
@@ -533,21 +553,16 @@ export const UI = {
                         </div>
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Due Date</label>
+                        <label class="text-xs font-semibold text-slate-500 tracking-wider">Due Date</label>
                         <div class="detail-date text-sm text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded transition-colors">${card.dueDate || 'No date set'}</div>
                     </div>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Labels</label>
+                    <label class="text-xs font-semibold text-slate-500 tracking-wider">Labels (comma separated)</label>
                     <div class="detail-labels flex flex-wrap gap-1 cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                         ${card.labels.length ? card.labels.map(l => `<span class="text-xs px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400">${l}</span>`).join(' ') : '<span class="text-sm text-slate-400 italic">No labels - click to add</span>'}
                     </div>
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Description</label>
-                    <div class="detail-description text-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded transition-colors whitespace-pre-wrap">${card.description || 'No description - click to add one'}</div>
                 </div>
 
                 <div class="pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
@@ -591,6 +606,17 @@ export const UI = {
             content.querySelectorAll('.detail-priority span').forEach(span => {
                 span.onclick = () => callbacks?.onEditPriority?.(span.dataset.priority, card);
             });
+        }
+
+        // Attach archive/delete listeners
+        const archiveBtn = content.querySelector('#archive-card-btn');
+        const deleteBtn = content.querySelector('#delete-card-btn');
+        if (role !== 'VIEWER') {
+            if (archiveBtn) archiveBtn.onclick = () => callbacks?.onArchive?.(card.id);
+            if (deleteBtn) deleteBtn.onclick = () => callbacks?.onDelete?.(card.id);
+        } else {
+            if (archiveBtn) archiveBtn.classList.add('hidden');
+            if (deleteBtn) deleteBtn.classList.add('hidden');
         }
 
         // Attach close listeners
