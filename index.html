@@ -1,466 +1,1219 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
 <head>
-    <meta property="og:title" content="WebTools: Kanban">
-    <meta property="og:description" content="A modern, responsive Kanban board implementation featuring drag-and-drop functionality, dark mode support, and local storage persistence.">
-    <meta property="og:url" content="https://pages.ikoyski.top/webtools-kanban/">
-    <meta charset="UTF-8">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Kanban Board</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SortableJS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <link rel="stylesheet" href="src/css/style.css">
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            200: '#bfdbfe',
-                            300: '#93c5fd',
-                            400: '#60a5fa',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            800: '#1e40af',
-                            900: '#1e3a8a',
-                            950: '#172554',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Draftbench — Learn to Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F2F1EC;
+    --paper-raised: #FFFFFF;
+    --ink: #1B2430;
+    --ink-soft: #5B6674;
+    --blue: #2B4C6F;
+    --blue-soft: #7FA3C0;
+    --grid-line: rgba(43,76,111,0.12);
+    --amber: #E0A03D;
+    --amber-ink: #7A4A0E;
+    --success: #2E6B4C;
+    --success-bg: #E3F0E8;
+    --danger: #A6432B;
+    --danger-bg: #F8E7E2;
+    --border: rgba(27,36,48,0.16);
+    --radius: 4px;
+    --editor-bg: #161B22;
+    --editor-ink: #DDE4EA;
+    --editor-line: rgba(255,255,255,0.10);
+    --font-serif: 'IBM Plex Serif', Georgia, serif;
+    --font-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #12161C;
+      --paper-raised: #1A212A;
+      --ink: #E7E9EC;
+      --ink-soft: #9AA5B1;
+      --blue: #8FB6D8;
+      --blue-soft: #4A7396;
+      --grid-line: rgba(143,182,216,0.14);
+      --amber: #EFB65B;
+      --amber-ink: #2A1B05;
+      --success: #7FCBA0;
+      --success-bg: rgba(63,125,92,0.20);
+      --danger: #E2917A;
+      --danger-bg: rgba(166,67,43,0.22);
+      --border: rgba(231,233,236,0.16);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #12161C;
+    --paper-raised: #1A212A;
+    --ink: #E7E9EC;
+    --ink-soft: #9AA5B1;
+    --blue: #8FB6D8;
+    --blue-soft: #4A7396;
+    --grid-line: rgba(143,182,216,0.14);
+    --amber: #EFB65B;
+    --amber-ink: #2A1B05;
+    --success: #7FCBA0;
+    --success-bg: rgba(63,125,92,0.20);
+    --danger: #E2917A;
+    --danger-bg: rgba(166,67,43,0.22);
+    --border: rgba(231,233,236,0.16);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    min-height: 100%;
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.55;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  h1, h2, h3 { font-family: var(--font-serif); font-weight: 600; margin: 0 0 8px; line-height: 1.25; }
+  p { margin: 0 0 12px; }
+  button { font-family: inherit; }
+  code { font-family: var(--font-mono); background: rgba(43,76,111,0.10); padding: 1px 5px; border-radius: 3px; font-size: 0.92em; }
+  *:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  /* ---------- Header ---------- */
+  .site-header {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border);
+  }
+  .wordmark {
+    background: none; border: none; cursor: pointer;
+    font-family: var(--font-serif); font-weight: 600; font-size: 19px; color: var(--ink);
+    padding: 0;
+  }
+  .header-right { display: flex; align-items: center; gap: 14px; }
+  .header-progress { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--paper-raised);
+    color: var(--ink); cursor: pointer; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon-btn:hover { border-color: var(--blue-soft); }
+
+  main#app { max-width: 980px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  /* ---------- Breadcrumb ---------- */
+  .breadcrumb {
+    font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-soft);
+    margin-bottom: 22px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  }
+  .breadcrumb button { background: none; border: none; color: var(--ink-soft); cursor: pointer; font-family: inherit; font-size: inherit; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
+  .breadcrumb button:hover { color: var(--blue); }
+  .breadcrumb span { color: var(--ink); }
+
+  /* ---------- Hero / Home ---------- */
+  .title-block { display: inline-block; margin-bottom: 22px; }
+  .stamp-label {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em;
+    color: var(--blue); border: 1px solid var(--border); padding: 5px 10px; border-radius: 3px;
+    background: var(--paper-raised);
+  }
+  .hero-title { font-size: clamp(30px, 5vw, 46px); max-width: 14ch; margin-bottom: 16px; }
+  .hero-sub { max-width: 62ch; color: var(--ink-soft); font-size: 16px; margin-bottom: 8px; }
+
+  .sheet-grid {
+    margin-top: 30px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  }
+  @media (max-width: 640px) { .sheet-grid { grid-template-columns: 1fr; } }
+  .sheet {
+    display: flex; text-align: left; background: var(--paper-raised);
+    border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;
+    padding: 0; overflow: hidden; color: inherit; font-family: inherit;
+  }
+  .sheet:hover { border-color: var(--tab-color, var(--blue-soft)); }
+  .sheet-tab { width: 6px; background: var(--tab-color, var(--blue)); flex-shrink: 0; }
+  .sheet-body { padding: 18px 20px; flex: 1; }
+  .sheet-meta, .track-progress-label, .lesson-num {
+    font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); letter-spacing: 0.02em;
+  }
+  .sheet-title { font-size: 20px; margin: 6px 0 6px; }
+  .sheet-desc { color: var(--ink-soft); font-size: 14.5px; margin-bottom: 12px; }
+  .sheet-progress { height: 5px; background: var(--grid-line); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+  .sheet-progress.wide { max-width: 320px; }
+  .sheet-progress-fill { height: 100%; background: var(--tab-color, var(--amber)); }
+  .sheet-status { font-size: 13px; color: var(--ink-soft); }
+
+  /* ---------- Track view ---------- */
+  .track-header { display: flex; gap: 16px; background: var(--paper-raised); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 22px; overflow: hidden; }
+  .track-tab { width: 6px; background: var(--tab-color, var(--blue)); flex-shrink: 0; margin: -20px 0 -20px -22px; }
+  .track-header p { color: var(--ink-soft); }
+  .track-progress-label { display: inline-block; margin-top: 6px; }
+
+  .lesson-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px; }
+  .lesson-row {
+    display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+    background: var(--paper-raised); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; cursor: pointer; color: inherit;
+  }
+  .lesson-row:hover { border-color: var(--blue-soft); }
+  .lesson-row-title { flex: 1; font-size: 15.5px; }
+  .lesson-check { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--success); flex-shrink: 0; }
+  .lesson-check.done { background: var(--success-bg); border-color: var(--success); }
+
+  .inspection-card {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: var(--paper-raised); border: 1.5px dashed var(--border); border-radius: var(--radius);
+    padding: 18px 20px; text-align: left; cursor: pointer; color: inherit;
+  }
+  .inspection-card:hover { border-color: var(--amber); }
+  .inspection-card h3 { margin: 4px 0 4px; font-size: 17px; }
+  .inspection-card p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+  .inspection-arrow { font-size: 18px; color: var(--success); }
+
+  /* ---------- Lesson view ---------- */
+  .lesson-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 860px) { .lesson-grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--paper-raised); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; }
+  .panel-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--ink-soft); margin-bottom: 10px; }
+  .panel-label.accent { color: var(--amber-ink); }
+  .lesson-copy p { color: var(--ink); font-size: 15.5px; }
+  .code-card { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .code-card-head { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); padding: 7px 12px; border-bottom: 1px solid var(--border); background: var(--paper); }
+  .code-block { margin: 0; padding: 14px; background: var(--editor-bg); color: var(--editor-ink); overflow-x: auto; font-size: 13px; }
+  .code-block code { background: none; padding: 0; color: inherit; }
+
+  .tok-tag { color: #7FB0E0; }
+  .tok-attr { color: #E0A03D; }
+  .tok-str { color: #8FE3B0; }
+  .tok-sel { color: #7FB0E0; font-weight: 600; }
+  .tok-prop { color: #E0A03D; }
+  .tok-val { color: #DDE4EA; }
+  .tok-kw { color: #7FB0E0; font-weight: 600; }
+  .tok-num { color: #8FE3B0; }
+  .tok-com { color: #6B7684; font-style: italic; }
+
+  .editor-card { border: 1px solid var(--editor-line); border-radius: var(--radius); overflow: hidden; background: var(--editor-bg); }
+  .editor-tabs { display: flex; border-bottom: 1px solid var(--editor-line); }
+  .editor-tab { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); padding: 8px 14px; cursor: pointer; color: #9AA5B1; }
+  .editor-tab.active { color: var(--editor-ink); background: rgba(255,255,255,0.06); border-bottom: 2px solid var(--amber); }
+  .editor-textarea {
+    display: block; width: 100%; min-height: 160px; resize: vertical;
+    background: var(--editor-bg); color: var(--editor-ink); border: none; outline: none;
+    font-family: var(--font-mono); font-size: 13px; padding: 14px; line-height: 1.5;
+  }
+  .editor-textarea.hidden { display: none; }
+  .editor-toolbar { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+  .editor-hint { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-soft); }
+  .preview-card { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: #fff; }
+  .preview-head { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); padding: 7px 12px; border-bottom: 1px solid var(--border); background: var(--paper); }
+  .preview-frame { display: block; width: 100%; height: 260px; border: none; background: #fff; }
+
+  .btn {
+    font-family: var(--font-mono); font-size: 13px; padding: 10px 16px; border-radius: var(--radius);
+    cursor: pointer; border: 1px solid transparent;
+  }
+  .btn.small { padding: 7px 12px; font-size: 12px; }
+  .btn.primary { background: var(--amber); color: var(--amber-ink); font-weight: 600; border-color: var(--amber); }
+  .btn.primary:hover { filter: brightness(1.05); }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--border); }
+  .btn.ghost:hover { border-color: var(--blue-soft); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .lesson-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 24px; }
+
+  /* ---------- Quiz view ---------- */
+  .quiz-header { margin-bottom: 20px; }
+  .quiz-header p { color: var(--ink-soft); }
+  .quiz-list { display: flex; flex-direction: column; gap: 18px; margin-bottom: 24px; }
+  .quiz-question { background: var(--paper-raised); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+  .quiz-q-label { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); margin-bottom: 6px; }
+  .quiz-q-text { font-size: 15.5px; margin-bottom: 12px; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-option {
+    text-align: left; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--paper); cursor: pointer; font-family: var(--font-sans); font-size: 14.5px; color: var(--ink);
+  }
+  .quiz-option:hover { border-color: var(--blue-soft); }
+  .quiz-option.selected { border-color: var(--amber); background: color-mix(in srgb, var(--amber) 14%, var(--paper)); }
+  .quiz-option.correct { border-color: var(--success); background: var(--success-bg); }
+  .quiz-option.incorrect { border-color: var(--danger); background: var(--danger-bg); }
+  .quiz-option:disabled { cursor: default; }
+  .quiz-explain { margin-top: 10px; font-size: 13.5px; color: var(--ink-soft); border-top: 1px dashed var(--border); padding-top: 10px; }
+
+  .stamp-result { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; }
+  .stamp {
+    font-family: var(--font-mono); font-weight: 600; font-size: 20px; letter-spacing: 0.08em;
+    border: 3px solid; border-radius: 8px; padding: 10px 18px; transform: rotate(-5deg);
+  }
+  .stamp-result.pass .stamp { color: var(--success); border-color: var(--success); }
+  .stamp-result.fail .stamp { color: var(--danger); border-color: var(--danger); }
+  .stamp-result p { color: var(--ink-soft); margin: 0; }
+</style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300 min-h-screen flex flex-col">
+<body>
+  <header class="site-header">
+    <button class="wordmark" data-action="go-home">Draftbench</button>
+    <div class="header-right">
+      <span id="header-progress" class="header-progress"></span>
+      <button id="theme-toggle" data-action="toggle-theme" class="icon-btn" aria-label="Toggle theme">&#9789;</button>
+    </div>
+  </header>
+  <main id="app"></main>
 
-    <!-- App Auth Views Wrapper -->
-    <div id="app-auth-view" class="flex-1 flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900">
-        <!-- Login Card -->
-        <div id="login-card" class="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8 transition-all">
-            <div class="text-center mb-8">
-                <div class="bg-primary-600 text-white w-12 h-12 rounded-lg shadow-lg flex items-center justify-center mx-auto mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6 0h3m-3 4h3" />
-                    </svg>
-                </div>
-                <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Welcome Back</h2>
-                <p class="text-slate-500 dark:text-slate-400 text-sm mt-2">Please enter your details to sign in</p>
-            </div>
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1 opacity-70">Email</label>
-                    <input type="email" id="login-email" required class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent focus:ring-2 focus:ring-primary-500 outline-none transition-all">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1 opacity-70">Password</label>
-                    <input type="password" id="login-password" required class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent focus:ring-2 focus:ring-primary-500 outline-none transition-all">
-                </div>
-                <div class="flex justify-center mb-4">
-                    <div class="cf-turnstile" data-sitekey="0x4AAAAAAFAkmbArLs1B6goA"></div>
-                </div>
-                <button type="submit" class="w-full py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-lg shadow-md transition-all active:scale-95">Sign In</button>
-            </form>
-            <div class="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
-                Don't have an account? <a href="#" id="show-signup" class="text-primary-600 hover:underline font-medium">Sign up for free</a>
-            </div>
-        </div>
-        <!-- Signup Card -->
-        <div id="signup-card" class="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8 transition-all hidden">
-            <div class="text-center mb-8">
-                <div class="bg-primary-600 text-white w-12 h-12 rounded-lg shadow-lg flex items-center justify-center mx-auto mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                    </svg>
-                </div>
-                <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Create Account</h2>
-                <p class="text-slate-500 dark:text-slate-400 text-sm mt-2">Join us and start organizing your tasks</p>
-            </div>
-            <form id="signup-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1 opacity-70">Display Name</label>
-                    <input type="text" id="signup-name" required class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent focus:ring-2 focus:ring-primary-500 outline-none transition-all">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1 opacity-70">Email</label>
-                    <input type="email" id="signup-email" required class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent focus:ring-2 focus:ring-primary-500 outline-none transition-all">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1 opacity-70">Password</label>
-                    <input type="password" id="signup-password" required class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent focus:ring-2 focus:ring-primary-500 outline-none transition-all">
-                </div>
-                <div class="flex justify-center mb-4">
-                    <div class="cf-turnstile" data-sitekey="0x4AAAAAAFAkmbArLs1B6goA"></div>
-                </div>
-                <button type="submit" class="w-full py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-lg shadow-md transition-all active:scale-95">Create Account</button>
-            </form>
-            <div class="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
-                Already have an account? <a href="#" id="show-login" class="text-primary-600 hover:underline font-medium">Sign in here</a>
-            </div>
-        </div>
-    </div>
+<script>
+(function () {
+  'use strict';
 
-    <!-- Board View Wrapper -->
-    <div id="app-board-view" class="hidden flex flex-col min-h-screen">
-        <!-- Header -->
-        <header class="sticky top-0 z-30 bg-primary-100/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3">
-            <div class="mx-auto flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="bg-primary-600 text-white p-2 rounded-lg shadow-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6 0h3m-3 4h3" />
-                        </svg>
-                    </div>
-                    <h1 class="text-xl font-bold tracking-tight hidden sm:block">WebTools <span class="text-primary-600">Kanban</span></h1>
-                </div>
-                <div class="flex items-center gap-3">
-                    <!-- Search -->
-                    <div class="relative flex-1 max-w-xs">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </span>
-                        <input type="text" id="search-input" placeholder="Search cards..." class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-2 focus:ring-primary-500 rounded-full text-sm transition-all outline-none">
-                    </div>
-                    <!-- Menu -->
-                    <div class="relative">
-                        <button id="profile-trigger" class="flex items-center gap-2 p-1 pr-3 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors group">
-                            <img id="user-avatar" src="https://ui-avatars.com/api/?name=" class="w-8 h-8 rounded-full border-2 border-primary-500" alt="Avatar">
-                            <div class="flex items-center gap-2">
-                                <span id="user-name" class="text-sm font-medium text-slate-700 dark:text-slate-200 hidden sm:block">User</span>
-                                <span id="user-role-badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary-200 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 hidden sm:block uppercase"></span>
-                            </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        <div id="menu-dropdown" class="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 hidden z-50 overflow-hidden">
-                            <!-- User Info -->
-                            <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
-                                <div id="menu-user-name" class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">User</div>
-                                <div id="menu-user-email" class="text-xs text-slate-500 dark:text-slate-400 truncate">user@example.com</div>
-                            </div>
-                            <!-- Account Section -->
-                            <div class="py-1">
-                                <button id="change-password-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    <span class="flex-1">Change Password</span>
-                                </button>
-                            </div>
-                            <div class="border-t border-slate-200 dark:border-slate-700"></div>
-                            <!-- Boards Section -->
-                            <div class="py-1">
-                                <div class="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Boards</div>
-                                <div class="px-4">
-                                    <select id="board-switcher" class="w-full py-2 text-sm bg-slate-100 dark:bg-slate-700 border-transparent rounded-md outline-none focus:ring-1 focus:ring-primary-500">
-                                        <option value="" disabled>Select Board</option>
-                                    </select>
-                                </div>
-                                <button id="create-board-btn" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    <span class="flex-1">Create New Board</span>
-                                </button>
-                            </div>
-                            <div class="border-t border-slate-200 dark:border-slate-700"></div>
-                            <!-- Current Board Section -->
-                            <div class="py-1">
-                                <div class="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Board</div>
-                                <button id="members-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20a3 3 0 00-3-3m-3-3V10a5 5 0 015-5h2v5a3 3 0 01-3 3m0 0a3 3 0 00-3 3m0 0v3m0 0h3m0 0H9m-1 3h1" />
-                                    </svg>
-                                    <span class="flex-1">Manage Members</span>
-                                </button>
-                                <button id="export-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                    </svg>
-                                    <span class="flex-1">Export Data</span>
-                                </button>
-                                <button id="import-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V7a3 3 0 013-3h10a3 3 0 013 3v1m-4 4l-4-4m0 0l-4 4m4-4v16" />
-                                    </svg>
-                                    <span class="flex-1">Import Data</span>
-                                </button>
-                                <button id="add-column-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    <span class="flex-1">Add Column</span>
-                                </button>
-                                <button id="archived-cards-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 11-4 0 2 2 0 014 0zM5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-10 0a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                    <span class="flex-1">Archived Cards</span>
-                                </button>
-                            </div>
-                            <div class="border-t border-slate-200 dark:border-slate-700"></div>
-                            <!-- Preference Section -->
-                            <div class="py-1">
-                                <div class="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Preference</div>
-                                <button id="theme-toggle-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                                    <div class="flex items-center gap-2">
-                                        <svg id="theme-toggle-dark-icon" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                                        </svg>
-                                        <svg id="theme-toggle-light-icon" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                                        </svg>
-                                        <span class="flex-1">Toggle Dark Mode</span>
-                                    </div>
-                                </button>
-                            </div>
-                            <div class="border-t border-slate-200 dark:border-slate-700"></div>
-                            <!-- General Section -->
-                            <div class="py-1">
-                                <button id="about-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span class="flex-1">About</span>
-                                </button>
-                            </div>
-                            <div class="border-t border-slate-200 dark:border-slate-700"></div>
-                            <!-- Footer Section -->
-                            <div class="py-1">
-                                <button id="logout-menu" class="w-full px-4 py-2 text-sm text-left hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-3 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                    </svg>
-                                    <span class="flex-1">Logout</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
-        <div class="pl-6 pt-3 inline-flex">
-            <h3 id="board-name" class="font-bold w-max"></h3>
-            <button id="rename-board-btn" class="p-1 text-slate-400 hover:text-primary-600 transition-colors rounded-md hover:bg-slate-200 dark:hover:bg-slate-700" title="Rename Board">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-            </button>
-        </div>
-        <main id="board-container" class="flex-1 overflow-x-auto pt-3 pr-6 pb-6 pl-6 flex gap-6 items-start">
-            <!-- Columns will be injected here by JS -->
-        </main>
-    </div>
+  /* ================= DATA ================= */
+  var COURSES = [
+    {
+      id: 'html', title: 'HTML Foundations', color: '#E34C26',
+      description: 'Structure every page with the tags that hold the web together.',
+      lessons: [
+        {
+          id: 'h1', title: 'Tags, Elements and Structure',
+          content: [
+            'Every web page is built from HTML elements, pieces marked with tags like `<p>` or `<h1>` that tell the browser what something is, not how it looks.',
+            'Most tags come in pairs: an opening tag `<p>` and a closing tag `</p>`, with content in between. A few, like `<img>` and `<br>`, stand alone.',
+            'A full page starts with `<!DOCTYPE html>`, then an `<html>` element holding a `<head>` (page information) and a `<body>` (what people actually see).'
+          ],
+          exampleLang: 'html',
+          example: '<!DOCTYPE html>\n<html>\n  <head>\n    <title>My First Page</title>\n  </head>\n  <body>\n    <h1>Hello, world!</h1>\n    <p>This is my first paragraph.</p>\n  </body>\n</html>',
+          sandbox: { type: 'html', starter: { html: '<h1>Hello, world!</h1>\n<p>Edit this text and watch the preview update.</p>' } }
+        },
+        {
+          id: 'h2', title: 'Text and Headings',
+          content: [
+            'Headings `<h1>` through `<h6>` create a page outline. `<h1>` is the most important, `<h6>` the least. Use them in order; do not skip a level just to make text bigger.',
+            'Paragraphs live in `<p>` tags. Inside a paragraph, `<strong>` marks text as important (shown bold) and `<em>` marks it as emphasized (shown italic).',
+            'A line break inside a paragraph is `<br>`, but reach for it rarely. A new `<p>` is usually the better choice for a new thought.'
+          ],
+          exampleLang: 'html',
+          example: '<h1>Backyard Garden Log</h1>\n<h2>Week One</h2>\n<p>The <strong>tomato</strong> seedlings sprouted today. <em>Finally</em>.</p>',
+          sandbox: { type: 'html', starter: { html: '<h1>My Page Title</h1>\n<h2>A Section</h2>\n<p>Try adding <strong>bold</strong> or <em>italic</em> text here.</p>' } }
+        },
+        {
+          id: 'h3', title: 'Links and Images',
+          content: [
+            'The `<a>` tag creates a link. Its `href` attribute is the destination: `<a href="https://example.com">Visit</a>`. Attributes always live inside the opening tag.',
+            'Images use `<img>`, which never has a closing tag. `src` points to the file, and `alt` describes the image for screen readers or when the image fails to load. Never skip `alt`.',
+            'Attribute values go in quotes, `attribute="value"`. Mixing that up is one of the most common beginner slips.'
+          ],
+          exampleLang: 'html',
+          example: '<a href="https://example.com">Visit example.com</a>\n<img src="https://placekitten.com/200/150" alt="A sleeping kitten">',
+          sandbox: { type: 'html', starter: { html: '<a href="https://example.com">A link somewhere</a>\n<p>Add an image below with a src and an alt.</p>' } }
+        },
+        {
+          id: 'h4', title: 'Lists and Tables',
+          content: [
+            'An unordered list `<ul>` holds bullet points; an ordered list `<ol>` numbers them. Either way, each item goes in an `<li>` tag.',
+            'Tables organize data into rows and columns. `<table>` wraps everything, `<tr>` is a row, and each cell is `<td>` (or `<th>` for a header cell).',
+            'Nesting matters. A `<li>` only makes sense inside a `<ul>` or `<ol>`, and a `<td>` only inside a `<tr>`.'
+          ],
+          exampleLang: 'html',
+          example: '<ul>\n  <li>Milk</li>\n  <li>Eggs</li>\n</ul>\n<table>\n  <tr><th>Day</th><th>Task</th></tr>\n  <tr><td>Mon</td><td>Water plants</td></tr>\n</table>',
+          sandbox: { type: 'html', starter: { html: '<ul>\n  <li>First item</li>\n  <li>Second item</li>\n</ul>' } }
+        },
+        {
+          id: 'h5', title: 'Forms and Inputs',
+          content: [
+            'Forms collect input from a person and typically send it somewhere. The `<form>` element wraps everything, and each field usually has a matching `<label>` so people know what to type.',
+            '`<input>` comes in many flavors set by its `type` attribute, `text`, `email`, `password`, `checkbox`, and more. Like `<img>`, it never has a closing tag.',
+            'A `<button>` triggers the form. Connect a label to its input with `for` and a matching `id`, so clicking the label focuses the field.'
+          ],
+          exampleLang: 'html',
+          example: '<form>\n  <label for="name">Name</label>\n  <input type="text" id="name">\n  <button type="submit">Send</button>\n</form>',
+          sandbox: { type: 'html', starter: { html: '<form>\n  <label for="email">Email</label>\n  <input type="email" id="email">\n  <button type="submit">Sign up</button>\n</form>' } }
+        },
+        {
+          id: 'h6', title: 'Semantic HTML5 Elements',
+          content: [
+            'Semantic elements describe the role of a section, not just its box. `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, and `<footer>` all behave like `<div>` visually, but they tell browsers and screen readers what each part is for.',
+            'A `<nav>` wraps primary navigation links. A `<main>` wraps the one central content area of a page, used only once. An `<article>` is a self-contained piece, such as a blog post, that would make sense on its own.',
+            'Reaching for a semantic tag before a generic `<div>` makes a page easier to navigate with assistive technology, and easier for another developer to read.'
+          ],
+          exampleLang: 'html',
+          example: '<header>\n  <h1>My Blog</h1>\n  <nav><a href="#">Home</a></nav>\n</header>\n<main>\n  <article>\n    <h2>First Post</h2>\n    <p>Welcome to the blog.</p>\n  </article>\n</main>',
+          sandbox: { type: 'html', starter: { html: '<header>\n  <h1>My Site</h1>\n  <nav><a href="#">Home</a> <a href="#">About</a></nav>\n</header>\n<main>\n  <article>\n    <h2>A Post Title</h2>\n    <p>Some content here.</p>\n  </article>\n</main>' } }
+        },
+        {
+          id: 'h7', title: 'Divs, Spans, and Attributes',
+          content: [
+            '`<div>` is a generic block-level container with no meaning of its own, useful for grouping content to style or position as a unit. `<span>` is the same idea, but inline, for wrapping a small piece of text inside a sentence.',
+            'The `class` attribute can be reused across many elements to style them the same way; `id` should be unique to one element on the page, often used as a target for links or scripts.',
+            'A `data-*` attribute stores extra information on an element that is not meant to be shown, such as `data-user-id="42"`, which JavaScript can read later.'
+          ],
+          exampleLang: 'html',
+          example: '<div class="card">\n  <span data-user-id="42">Ada Lovelace</span>\n</div>',
+          sandbox: { type: 'html', starter: { html: '<div class="card">\n  <span data-role="admin">Grace Hopper</span>\n</div>' } }
+        }
+      ],
+      quiz: [
+        { question: 'What does the `alt` attribute on an `<img>` tag do?', options: ['Sets the image alignment', 'Describes the image for accessibility and fallback text', 'Changes the image file format', 'Sets a link for the image'], correct: 1, explanation: '`alt` gives a text description used by screen readers and shown if the image cannot load.' },
+        { question: 'Which heading tag represents the most important heading on a page?', options: ['<h6>', '<h1>', '<head>', '<header>'], correct: 1, explanation: 'Headings run from most important, `<h1>`, to least, `<h6>`.' },
+        { question: 'Which tag does not need a closing tag?', options: ['<p>', '<div>', '<img>', '<ul>'], correct: 2, explanation: '`<img>` is a self-contained element with no closing tag.' },
+        { question: 'What attribute on `<a>` sets the link destination?', options: ['src', 'href', 'link', 'target-url'], correct: 1, explanation: '`href` points to where the link goes.' },
+        { question: 'Where must an `<li>` element be placed to be valid?', options: ['Directly in `<body>`', 'Inside a `<ul>` or `<ol>`', 'Inside a `<table>`', 'Inside a `<head>`'], correct: 1, explanation: 'List items only make sense nested inside a list container.' },
+        { question: 'Which attribute on a `<label>` connects it to a specific `<input>`?', options: ['class', 'name', 'for', 'href'], correct: 2, explanation: '`for` should match the input `id`, so clicking the label focuses that field.' },
+        { question: 'Which element is meant to wrap the one central content area of a page?', options: ['<aside>', '<main>', '<footer>', '<span>'], correct: 1, explanation: '<main> wraps the one central content area of a page, used only once.' },
+        { question: 'What is `data-user-id="42"` an example of?', options: ['A class attribute', 'A custom data attribute', 'A required HTML tag', 'A CSS selector'], correct: 1, explanation: 'A `data-*` attribute stores extra information for JavaScript to read later.' }
+      ]
+    },
+    {
+      id: 'css', title: 'CSS Fundamentals', color: '#2965F1',
+      description: 'Give your HTML a look: spacing, color, and layout.',
+      lessons: [
+        {
+          id: 'c1', title: 'Selectors and Syntax',
+          content: [
+            'CSS rules follow one pattern: a selector, then declarations in curly braces. `p { color: navy; }` selects every `<p>` and sets its text color.',
+            'Three common selector types: an element selector (`p`) matches by tag name, a class selector (`.card`) matches any element with `class="card"`, and an id selector (`#header`) matches the one element with that id.',
+            'Each declaration is a property and a value, separated by a colon and ended with a semicolon.'
+          ],
+          exampleLang: 'css',
+          example: 'p {\n  color: navy;\n}\n.highlight {\n  background-color: yellow;\n}',
+          sandbox: { type: 'html-css', starter: {
+            html: '<p>A normal paragraph.</p>\n<p class="highlight">A highlighted paragraph.</p>',
+            css: 'p {\n  color: navy;\n}\n.highlight {\n  background-color: yellow;\n}'
+          } }
+        },
+        {
+          id: 'c2', title: 'The Box Model',
+          content: [
+            'Every element is a box with four layers, from the inside out: content, padding, border, and margin. Padding adds space inside the border; margin adds space outside it.',
+            '`border: 2px solid black;` draws a visible edge. Padding and margin can be set on all sides at once, `padding: 10px;`, or per side, `padding-top: 10px;`.',
+            'By default, width and height apply only to the content box, so padding and border make an element bigger overall. `box-sizing: border-box;` changes that so width includes padding and border.'
+          ],
+          exampleLang: 'css',
+          example: '.box {\n  width: 200px;\n  padding: 16px;\n  border: 3px solid #2965F1;\n  margin: 12px;\n  box-sizing: border-box;\n}',
+          sandbox: { type: 'html-css', starter: {
+            html: '<div class="box">Resize my padding, border, and margin in the CSS panel.</div>',
+            css: '.box {\n  width: 260px;\n  padding: 16px;\n  border: 3px solid #2965F1;\n  margin: 12px;\n  box-sizing: border-box;\n}'
+          } }
+        },
+        {
+          id: 'c3', title: 'Colors and Typography',
+          content: [
+            'Colors can be named (`tomato`), hex (`#ff6347`), or rgb (`rgb(255,99,71)`), all three describe the same color in different notations.',
+            '`font-family` sets the typeface, `font-size` its size, and `font-weight` its boldness, `normal` or `bold`, or a number like `700`.',
+            '`text-align` positions text within its box (`left`, `center`, `right`), and `line-height` controls the space between lines of text.'
+          ],
+          exampleLang: 'css',
+          example: 'h1 {\n  color: #2965F1;\n  font-family: Georgia, serif;\n  text-align: center;\n}\np {\n  font-size: 18px;\n  line-height: 1.6;\n}',
+          sandbox: { type: 'html-css', starter: {
+            html: '<h1>Styled Heading</h1>\n<p>Change my color, size, and alignment.</p>',
+            css: 'h1 {\n  color: #2965F1;\n  font-family: Georgia, serif;\n  text-align: center;\n}\np {\n  font-size: 18px;\n  line-height: 1.6;\n}'
+          } }
+        },
+        {
+          id: 'c4', title: 'Flexbox Basics',
+          content: [
+            '`display: flex;` turns an element into a row, by default, that lines up its children automatically.',
+            '`justify-content` controls spacing along the row (`flex-start`, `center`, `space-between`), while `align-items` controls alignment across the row height (`flex-start`, `center`, `stretch`).',
+            '`gap` adds even spacing between flex children without needing margin on each one.'
+          ],
+          exampleLang: 'css',
+          example: '.row {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 12px;\n}',
+          sandbox: { type: 'html-css', starter: {
+            html: '<div class="row">\n  <div class="item">One</div>\n  <div class="item">Two</div>\n  <div class="item">Three</div>\n</div>',
+            css: '.row {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 12px;\n  background: #eef2f7;\n  padding: 12px;\n}\n.item {\n  background: #2965F1;\n  color: white;\n  padding: 8px 16px;\n  border-radius: 4px;\n}'
+          } }
+        },
+        {
+          id: 'c5', title: 'Positioning',
+          content: [
+            'The `position` property changes how an element is placed. `static` is the default, following normal document flow. `relative` keeps an element in flow but lets `top`, `left`, `right`, and `bottom` nudge it from where it would otherwise sit.',
+            '`absolute` removes an element from flow entirely and positions it relative to its nearest positioned ancestor, an element with any `position` other than `static`. `fixed` positions it relative to the browser window itself, staying put even when the page scrolls.',
+            '`z-index` decides stacking order when elements overlap. A higher number sits on top of a lower one, but it only works on positioned elements.'
+          ],
+          exampleLang: 'css',
+          example: '.badge {\n  position: absolute;\n  top: 8px;\n  right: 8px;\n  background: crimson;\n  color: white;\n}',
+          sandbox: { type: 'html-css', starter: {
+            html: '<div class="container">\n  <span class="badge">New</span>\n</div>',
+            css: '.container {\n  position: relative;\n  width: 220px;\n  height: 100px;\n  background: #eef2f7;\n}\n.badge {\n  position: absolute;\n  top: 8px;\n  right: 8px;\n  background: crimson;\n  color: white;\n  padding: 2px 8px;\n  border-radius: 3px;\n}'
+          } }
+        },
+        {
+          id: 'c6', title: 'CSS Grid Basics',
+          content: [
+            '`display: grid;` turns an element into a grid container, arranging children into rows and columns instead of a single row like flexbox.',
+            '`grid-template-columns` defines the columns. `grid-template-columns: 1fr 1fr 1fr;` creates three equal columns, and `1fr` means one fraction of the remaining space.',
+            '`gap` spaces out both rows and columns at once. Grid and flexbox solve different problems, reach for grid when content needs to line up in two dimensions, and flexbox for a single row or column.'
+          ],
+          exampleLang: 'css',
+          example: '.gallery {\n  display: grid;\n  grid-template-columns: 1fr 1fr 1fr;\n  gap: 10px;\n}',
+          sandbox: { type: 'html-css', starter: {
+            html: '<div class="gallery">\n  <div class="tile">1</div>\n  <div class="tile">2</div>\n  <div class="tile">3</div>\n</div>',
+            css: '.gallery {\n  display: grid;\n  grid-template-columns: 1fr 1fr 1fr;\n  gap: 10px;\n}\n.tile {\n  background: #2965F1;\n  color: white;\n  padding: 20px;\n  text-align: center;\n  border-radius: 4px;\n}'
+          } }
+        },
+        {
+          id: 'c7', title: 'Pseudo-classes and Pseudo-elements',
+          content: [
+            'A pseudo-class styles an element in a particular state without needing extra markup. `:hover` applies while the mouse is over it, and `:focus` applies while an input is active.',
+            '`:nth-child(2)` selects an element by its position among its siblings, useful for styling every other row in a list without adding a class to each one.',
+            'A pseudo-element like `::before` inserts generated content before an element, often used for small decorative marks. It needs a `content` value, even if that value is empty.'
+          ],
+          exampleLang: 'css',
+          example: 'button:hover {\n  background: #1c4e8a;\n}\nli:nth-child(2) {\n  color: crimson;\n}',
+          sandbox: { type: 'html-css', starter: {
+            html: '<button>Hover me</button>\n<ul>\n  <li>One</li>\n  <li>Two</li>\n  <li>Three</li>\n</ul>',
+            css: 'button {\n  background: #2965F1;\n  color: white;\n  padding: 8px 14px;\n  border: none;\n  border-radius: 4px;\n}\nbutton:hover {\n  background: #1c4e8a;\n}\nli:nth-child(2) {\n  color: crimson;\n}'
+          } }
+        }
+      ],
+      quiz: [
+        { question: 'Which selector targets every element with `class="card"`?', options: ['#card', '.card', 'card', '*card'], correct: 1, explanation: 'A leading dot selects by class.' },
+        { question: 'In the box model, what sits directly outside the border?', options: ['Padding', 'Margin', 'Content', 'Outline'], correct: 1, explanation: 'From inside out: content, padding, border, margin.' },
+        { question: 'What does `box-sizing: border-box;` change?', options: ['Makes the box round', 'Includes padding and border in the declared width and height', 'Removes the border', 'Centers the box'], correct: 1, explanation: 'Without it, padding and border add to the declared size instead of fitting inside it.' },
+        { question: 'Which property turns an element into a flex container?', options: ['flex: true;', 'display: flex;', 'position: flex;', 'layout: flex;'], correct: 1, explanation: '`display: flex;` is the property that enables flexbox layout.' },
+        { question: 'Which `justify-content` value spreads flex children with equal gaps between them, not at the edges?', options: ['flex-start', 'center', 'space-between', 'stretch'], correct: 2, explanation: '`space-between` pushes the first and last items to the edges and spaces the rest evenly.' },
+        { question: 'Which position value removes an element from normal flow and positions it relative to the browser window itself?', options: ['relative', 'static', 'fixed', 'inherit'], correct: 2, explanation: '`fixed` positions relative to the browser window and stays put when the page scrolls.' },
+        { question: 'Which property arranges children into rows and columns at once?', options: ['display: flex;', 'display: grid;', 'display: block;', 'display: inline;'], correct: 1, explanation: 'Grid lines content up in two dimensions, rows and columns together.' },
+        { question: 'Which selector styles every second list item without adding a class to it?', options: [':hover', '::before', ':nth-child(2)', ':focus'], correct: 2, explanation: '`:nth-child(2)` targets an element by its position among its siblings.' }
+      ]
+    },
+    {
+      id: 'tailwind', title: 'Tailwind CSS', color: '#0EA5C4',
+      description: 'Style directly in your markup with utility classes.',
+      lessons: [
+        {
+          id: 't1', title: 'Utility-First Basics',
+          content: [
+            'Tailwind skips writing custom CSS files. Instead, elements are styled by adding utility classes directly in the HTML, `class="p-4 bg-blue-500 text-white"`.',
+            'Each utility does one small thing: `p-4` sets padding, `bg-blue-500` sets a background color, `text-white` sets text color. Many small classes combine instead of one invented class name.',
+            'This can feel verbose at first, but it means rarely leaving the HTML to make a style change.'
+          ],
+          exampleLang: 'html',
+          example: '<button class="px-4 py-2 bg-blue-500 text-white rounded">\n  Click me\n</button>',
+          sandbox: { type: 'tailwind', starter: { html: '<button class="px-4 py-2 bg-blue-500 text-white rounded">\n  Click me\n</button>' } }
+        },
+        {
+          id: 't2', title: 'Spacing and Sizing',
+          content: [
+            'Padding uses `p-` for all sides, `px-` and `py-` for horizontal and vertical, or `pt-`, `pr-`, `pb-`, `pl-` for one side. Margin works the same way with `m-`.',
+            'The number after the dash is a step on the spacing scale, not a pixel count directly. `p-4` is 1rem (16px), `p-8` is 2rem.',
+            'Width and height use `w-` and `h-`, including fractions like `w-1/2` for 50 percent and fixed steps like `w-64`.'
+          ],
+          exampleLang: 'html',
+          example: '<div class="w-64 p-6 m-4 bg-slate-100">\n  A box with width, padding, and margin.\n</div>',
+          sandbox: { type: 'tailwind', starter: { html: '<div class="w-64 p-6 m-4 bg-slate-100 rounded">\n  Try changing the width and padding classes.\n</div>' } }
+        },
+        {
+          id: 't3', title: 'Flexbox and Grid with Tailwind',
+          content: [
+            '`flex` turns on flexbox, the same as `display: flex;` in plain CSS. Pair it with `justify-between`, `items-center`, or `gap-4` to arrange children.',
+            '`grid` turns on CSS grid. `grid-cols-3` creates three equal columns, and `gap-4` spaces them out.',
+            'These map closely to plain CSS flexbox and grid properties. Tailwind is mostly a shorthand, not a new layout system.'
+          ],
+          exampleLang: 'html',
+          example: '<div class="flex justify-between items-center gap-4">\n  <div class="bg-sky-500 text-white p-4">One</div>\n  <div class="bg-sky-500 text-white p-4">Two</div>\n</div>',
+          sandbox: { type: 'tailwind', starter: { html: '<div class="flex justify-between items-center gap-4">\n  <div class="bg-sky-500 text-white p-4 rounded">One</div>\n  <div class="bg-sky-500 text-white p-4 rounded">Two</div>\n</div>' } }
+        },
+        {
+          id: 't4', title: 'Responsive Design and States',
+          content: [
+            'Prefix any utility with a breakpoint to apply it only at that size and above, `md:flex` turns on flex layout only on medium screens and wider.',
+            'State prefixes work the same way. `hover:bg-blue-700` changes the background only while hovering, and `focus:ring-2` adds a ring when an input is focused.',
+            'Because these are just classes, several can stack: `bg-blue-500 hover:bg-blue-700 md:text-lg` combines a base style, a hover state, and a responsive size.'
+          ],
+          exampleLang: 'html',
+          example: '<button class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded md:text-lg">\n  Hover or resize me\n</button>',
+          sandbox: { type: 'tailwind', starter: { html: '<button class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">\n  Hover over me\n</button>' } }
+        },
+        {
+          id: 't5', title: 'Typography Utilities',
+          content: [
+            '`text-` sets font size on a scale, `text-sm`, `text-lg`, `text-2xl`, and larger. `font-` sets weight, `font-normal`, `font-medium`, `font-bold`.',
+            'Text color uses the same color palette as backgrounds, `text-gray-600`, `text-blue-600`, and so on. `text-center`, `text-left`, and `text-right` control alignment.',
+            '`leading-` controls line height and `tracking-` controls letter spacing, both useful for making a heading feel tighter or a paragraph easier to read.'
+          ],
+          exampleLang: 'html',
+          example: '<h2 class="text-2xl font-bold text-slate-800">\n  A Styled Heading\n</h2>\n<p class="text-sm text-slate-500">\n  Supporting text underneath.\n</p>',
+          sandbox: { type: 'tailwind', starter: { html: '<h2 class="text-2xl font-bold text-slate-800">\n  A Styled Heading\n</h2>\n<p class="text-sm text-slate-500">\n  Try changing the size, weight, or color classes.\n</p>' } }
+        },
+        {
+          id: 't6', title: 'Borders, Backgrounds, and Shadows',
+          content: [
+            '`border` adds a default border, and `border-2` or `border-4` set its thickness. Pair it with a color like `border-blue-500`.',
+            '`rounded` softens corners, from `rounded-sm` to `rounded-full` for a circle. `bg-` sets a solid background color.',
+            '`shadow-sm` through `shadow-xl` add depth with a drop shadow, a quick way to lift a card off the page.'
+          ],
+          exampleLang: 'html',
+          example: '<div class="border-2 border-blue-500 rounded-lg shadow-md p-4 bg-white">\n  A card with a border and shadow.\n</div>',
+          sandbox: { type: 'tailwind', starter: { html: '<div class="border-2 border-blue-500 rounded-lg shadow-md p-4 bg-white">\n  Try changing the border, radius, or shadow classes.\n</div>' } }
+        },
+        {
+          id: 't7', title: 'Building a Component',
+          content: [
+            'Real interfaces combine many utilities on one element. A card might need padding, a background, a border radius, a shadow, and typography utilities all at once.',
+            'Breaking a design into small questions helps, how much space around the content, what background and border, how should the text look, and does anything change on hover.',
+            'There is no single correct set of classes. Different combinations of spacing, color, and typography utilities can all produce a good-looking result.'
+          ],
+          exampleLang: 'html',
+          example: '<div class="max-w-sm p-6 bg-white rounded-lg shadow-md">\n  <h3 class="text-lg font-bold text-slate-800">Card Title</h3>\n  <p class="text-sm text-slate-500 mt-2">A short description goes here.</p>\n  <button class="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded">Learn more</button>\n</div>',
+          sandbox: { type: 'tailwind', starter: { html: '<div class="max-w-sm p-6 bg-white rounded-lg shadow-md">\n  <h3 class="text-lg font-bold text-slate-800">Card Title</h3>\n  <p class="text-sm text-slate-500 mt-2">A short description goes here.</p>\n  <button class="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded">Learn more</button>\n</div>' } }
+        }
+      ],
+      quiz: [
+        { question: 'In Tailwind, how is an element usually styled?', options: ['A custom CSS class in a separate file', 'Utility classes added directly to the HTML element', 'Inline style attributes only', 'Tailwind has no way to set color'], correct: 1, explanation: 'Tailwind is a utility-first framework: classes in the markup do the styling.' },
+        { question: 'What does `p-4` do?', options: ['Sets font size', 'Sets padding on all sides', 'Sets position to fixed', 'Sets a border width'], correct: 1, explanation: '`p-` is the padding utility prefix; `4` is a step on the spacing scale.' },
+        { question: 'Which class turns on flexbox layout?', options: ['layout-flex', 'flex', 'display-flex', 'box-flex'], correct: 1, explanation: '`flex` maps to `display: flex;`.' },
+        { question: 'What does the `hover:` prefix do?', options: ['Applies a style only above a screen size', 'Applies a style only while the mouse is over the element', 'Applies a style permanently', 'Removes the element on hover'], correct: 1, explanation: 'State prefixes like `hover:` apply their utility only during that state.' },
+        { question: 'What does `md:flex` mean?', options: ['Flex only below medium screens', 'Flex only at medium screens and wider', 'Flex only on mobile', 'It is invalid syntax'], correct: 1, explanation: 'Breakpoint prefixes apply their utility from that screen size upward.' },
+        { question: 'Which class sets a large, bold heading in Tailwind?', options: ['text-2xl font-bold', 'big-text strong', 'heading-lg', 'font-size-24'], correct: 0, explanation: '`text-` sets size and `font-` sets weight, combined directly as classes.' },
+        { question: 'Which class adds a drop shadow to an element?', options: ['border-md', 'shadow-md', 'rounded-md', 'ring-md'], correct: 1, explanation: '`shadow-` utilities add depth with a drop shadow.' },
+        { question: 'When combining utilities into one component, what decides the right set of classes?', options: ['There is exactly one correct combination', 'Only the color classes matter', 'Different combinations of spacing, color, and typography can all work', 'Utilities cannot be combined'], correct: 2, explanation: 'Many utility combinations can produce a good result; it is a design choice, not a single correct answer.' }
+      ]
+    },
+    {
+      id: 'js', title: 'JavaScript Essentials', color: '#C9A227',
+      description: 'Make pages react: variables, logic, and the DOM.',
+      lessons: [
+        {
+          id: 'j1', title: 'Variables and Data Types',
+          content: [
+            'Variables store values. Use `let` for a value that can change, and `const` for one that should not be reassigned. Avoid the older `var`.',
+            'Basic types include strings (`"hello"`), numbers (`42`, `3.14`), and booleans (`true`, `false`). JavaScript figures out the type automatically.',
+            'Combine them with operators: `+` adds numbers or joins strings, and `===` checks whether two values are equal.'
+          ],
+          exampleLang: 'js',
+          example: 'let score = 0;\nconst playerName = "Ada";\nscore = score + 10;\nconsole.log(playerName + " scored " + score);',
+          sandbox: { type: 'js', starter: {
+            html: '<p>Open the console below and click Run.</p>',
+            js: 'let score = 0;\nconst playerName = "Ada";\nscore = score + 10;\nconsole.log(playerName + " scored " + score);'
+          } }
+        },
+        {
+          id: 'j2', title: 'Functions',
+          content: [
+            'A function packages up reusable logic. `function greet(name) { return "Hi, " + name; }` defines it, and `greet("Sam")` calls it.',
+            'Arrow functions are a shorter way to write the same thing: `const greet = (name) => "Hi, " + name;`.',
+            'Whatever a function `return`s is the value you get back when you call it. Without `return`, a function gives back `undefined`.'
+          ],
+          exampleLang: 'js',
+          example: 'function double(n) {\n  return n * 2;\n}\nconst triple = (n) => n * 3;\nconsole.log(double(4), triple(4));',
+          sandbox: { type: 'js', starter: {
+            html: '<p>Try writing your own function below, then log the result.</p>',
+            js: 'function double(n) {\n  return n * 2;\n}\nconst triple = (n) => n * 3;\nconsole.log(double(4), triple(4));'
+          } }
+        },
+        {
+          id: 'j3', title: 'Conditionals and Loops',
+          content: [
+            '`if` and `else` run code only when a condition is true, `if (score > 10) { ... } else { ... }`.',
+            'A `for` loop repeats a block a set number of times: `for (let i = 0; i < 5; i++) { ... }` runs with `i` going from 0 to 4.',
+            'A `while` loop repeats as long as its condition stays true, useful when the exact number of repeats is not known in advance.'
+          ],
+          exampleLang: 'js',
+          example: 'for (let i = 1; i <= 3; i++) {\n  if (i === 2) {\n    console.log(i + " is my favorite");\n  } else {\n    console.log(i);\n  }\n}',
+          sandbox: { type: 'js', starter: {
+            html: '<p>Change the loop range or the condition and run again.</p>',
+            js: 'for (let i = 1; i <= 3; i++) {\n  if (i === 2) {\n    console.log(i + " is my favorite");\n  } else {\n    console.log(i);\n  }\n}'
+          } }
+        },
+        {
+          id: 'j4', title: 'DOM Manipulation',
+          content: [
+            'The DOM is a live model the browser keeps of the page. `document.querySelector("#title")` finds the first element matching a CSS selector.',
+            'Once an element is found, it can be changed: `.textContent` sets its text, and `.style.color` changes a CSS property directly from JavaScript.',
+            '`addEventListener("click", fn)` runs `fn` whenever that element is clicked. This is how pages respond to people.'
+          ],
+          exampleLang: 'js',
+          example: 'const btn = document.querySelector("#go");\nbtn.addEventListener("click", () => {\n  document.querySelector("#msg").textContent = "Clicked!";\n});',
+          sandbox: { type: 'js', starter: {
+            html: '<button id="go">Click me</button>\n<p id="msg">Waiting...</p>',
+            js: 'const btn = document.querySelector("#go");\nbtn.addEventListener("click", () => {\n  document.querySelector("#msg").textContent = "Clicked!";\n});'
+          } }
+        },
+        {
+          id: 'j5', title: 'Arrays',
+          content: [
+            'An array holds an ordered list of values in square brackets, `const colors = ["red", "green", "blue"];`. Each value has an index, starting at 0, so `colors[0]` is `"red"`.',
+            '`.push(value)` adds to the end of an array, and `.length` reports how many items it holds.',
+            'A `for` loop or the array method `.forEach(fn)` can visit every item in turn. `.forEach` calls the given function once per item, passing the item in.'
+          ],
+          exampleLang: 'js',
+          example: 'const colors = ["red", "green", "blue"];\ncolors.push("purple");\ncolors.forEach((c) => console.log(c));',
+          sandbox: { type: 'js', starter: {
+            html: '<p>Open the console below and click Run.</p>',
+            js: 'const colors = ["red", "green", "blue"];\ncolors.push("purple");\ncolors.forEach((c) => console.log(c));'
+          } }
+        },
+        {
+          id: 'j6', title: 'Objects',
+          content: [
+            'An object groups related values under named keys, `const user = { name: "Ada", age: 28 };`. Access a value with dot notation, `user.name`, or bracket notation, `user["name"]`.',
+            'A new key can be added, or an existing one changed, by assigning to it directly, `user.age = 29;`.',
+            'Objects can hold functions too, called methods. Inside a method, `this` refers to the object it was called on.'
+          ],
+          exampleLang: 'js',
+          example: 'const user = { name: "Ada", age: 28 };\nuser.age = 29;\nconsole.log(user.name + " is " + user.age);',
+          sandbox: { type: 'js', starter: {
+            html: '<p>Open the console below and click Run.</p>',
+            js: 'const user = { name: "Ada", age: 28 };\nuser.age = 29;\nconsole.log(user.name + " is " + user.age);'
+          } }
+        },
+        {
+          id: 'j7', title: 'Events Beyond Click',
+          content: [
+            'Elements fire more than click events. `input` fires every time a text field changes, `keydown` fires on any key press, and `submit` fires when a form is submitted.',
+            'Inside a form handler, `event.preventDefault()` stops the browser from reloading the page, which is the default behavior for a form submission.',
+            'The `event` object passed to a handler describes what happened. For a keyboard event, `event.key` reports which key was pressed.'
+          ],
+          exampleLang: 'js',
+          example: 'const form = document.querySelector("#myForm");\nform.addEventListener("submit", (event) => {\n  event.preventDefault();\n  console.log("Form submitted");\n});',
+          sandbox: { type: 'js', starter: {
+            html: '<form id="myForm">\n  <input type="text" placeholder="Type something">\n  <button type="submit">Submit</button>\n</form>',
+            js: 'const form = document.querySelector("#myForm");\nform.addEventListener("submit", (event) => {\n  event.preventDefault();\n  console.log("Form submitted");\n});'
+          } }
+        }
+      ],
+      quiz: [
+        { question: 'Which keyword should be used for a variable that will never be reassigned?', options: ['let', 'const', 'var', 'static'], correct: 1, explanation: '`const` signals a binding that will not be reassigned.' },
+        { question: 'What does a function return if it has no `return` statement?', options: ['0', 'An empty string', 'undefined', 'An error'], correct: 2, explanation: 'A function without `return` gives back `undefined`.' },
+        { question: 'How many times does `for (let i = 0; i < 4; i++)` run its body?', options: ['3', '4', '5', 'Infinite'], correct: 1, explanation: 'It runs for i = 0, 1, 2, 3, four times in total.' },
+        { question: 'Which method finds the first element matching a CSS selector?', options: ['document.getElementById only', 'document.querySelector', 'document.findElement', 'document.select'], correct: 1, explanation: '`document.querySelector` accepts any CSS selector and returns the first match.' },
+        { question: 'Which line makes a button respond to clicks?', options: ['btn.onHover(fn)', 'btn.addEventListener("click", fn)', 'btn.click = fn', 'btn.run(fn)'], correct: 1, explanation: '`addEventListener` attaches a handler for a given event type.' },
+        { question: 'What does `.push(value)` do to an array?', options: ['Removes the first item', 'Adds a value to the end', 'Sorts the array', 'Empties the array'], correct: 1, explanation: '`.push` adds one or more values to the end of an array.' },
+        { question: 'How do you read the `name` key on an object called `user`?', options: ['user->name', 'user.name', 'user::name', 'user(name)'], correct: 1, explanation: 'Dot notation, `user.name`, reads a key from an object.' },
+        { question: 'What does `event.preventDefault()` do inside a form submit handler?', options: ['Deletes the form', 'Stops the browser from reloading the page', 'Cancels all future events', 'Clears the input fields'], correct: 1, explanation: 'It stops the default browser behavior for that event, such as a full page reload on submit.' }
+      ]
+    }
+  ];
 
-    <!-- Card Modal -->
-    <div id="card-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
-        <div class="relative bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl transform transition-all scale-95 opacity-0 duration-200">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 id="modal-title" class="text-xl font-bold">Add New Card</h2>
-                    <button id="close-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-                <form id="card-form" class="space-y-4">
-                    <input type="hidden" id="card-id">
-                    <input type="hidden" id="column-id">
-                    <div>
-                        <label class="block text-sm font-medium mb-1 opacity-70">Title *</label>
-                        <input type="text" id="form-title" required class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent focus:ring-2 focus:ring-primary-500 outline-none transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1 opacity-70">Description</label>
-                        <textarea id="form-description" rows="8" class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent focus:ring-2 focus:ring-primary-500 outline-none transition-all"></textarea>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-1 opacity-70">Priority</label>
-                            <div class="flex gap-2">
-                                <label class="flex-1">
-                                    <input type="radio" name="priority" value="LOW" class="hidden peer">
-                                    <span class="block text-center py-1 px-2 rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer peer-checked:bg-green-100 peer-checked:text-green-700 peer-checked:border-green-500 dark:peer-checked:bg-green-900/30 dark:peer-checked:text-green-400 text-xs font-medium transition-all">Low</span>
-                                </label>
-                                <label class="flex-1">
-                                    <input type="radio" name="priority" value="MEDIUM" class="hidden peer" checked>
-                                    <span class="block text-center py-1 px-2 rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer peer-checked:bg-yellow-100 peer-checked:bg-yellow-700 peer-checked:border-yellow-500 dark:peer-checked:bg-yellow-900/30 dark:peer-checked:text-yellow-400 text-xs font-medium transition-all">Med</span>
-                                </label>
-                                <label class="flex-1">
-                                    <input type="radio" name="priority" value="HIGH" class="hidden peer">
-                                    <span class="block text-center py-1 px-2 rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer peer-checked:bg-red-100 peer-checked:text-red-700 peer-checked:border-red-500 dark:peer-checked:bg-red-900/30 dark:peer-checked:text-red-400 text-xs font-medium transition-all">High</span>
-                                </label>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1 opacity-70">Due Date</label>
-                            <input type="date" id="form-date" class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent focus:ring-2 focus:ring-primary-500 outline-none transition-all text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1 opacity-70">Labels (comma separated)</label>
-                        <input type="text" id="form-labels" placeholder="e.g. UI, API, Bug" class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent focus:ring-2 focus:ring-primary-500 outline-none transition-all">
-                    </div>
-                    <div class="flex justify-end gap-3 pt-4">
-                        <button type="button" id="cancel-modal" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Cancel</button>
-                        <button type="submit" class="px-6 py-2 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-lg shadow-md transition-all active:scale-95">Save Card</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+  /* ================= STATE ================= */
+  var route = { view: 'home', courseId: null, lessonIdx: 0 };
+  var progress = loadProgress();
+  var quizState = {};
+  var autoRunTimer = null;
 
-    <!-- Card Detail Modal -->
-    <div id="card-detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
-        <div class="relative bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl transform transition-all scale-95 opacity-0 duration-200">
-            <div id="card-detail-body" class="relative p-6">
-                <!-- Content will be injected by UI.openCardDetail -->
-            </div>
-        </div>
-    </div>
+  /* ================= STORAGE ================= */
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem('db_progress') || '{}'); }
+    catch (e) { return {}; }
+  }
+  function saveProgress() {
+    try { localStorage.setItem('db_progress', JSON.stringify(progress)); }
+    catch (e) { /* ignore */ }
+  }
+  function saveSandbox(key, code) {
+    try { localStorage.setItem('db_sandbox_' + key, JSON.stringify(code)); }
+    catch (e) { /* ignore */ }
+  }
+  function loadSandbox(key) {
+    try {
+      var v = localStorage.getItem('db_sandbox_' + key);
+      return v ? JSON.parse(v) : null;
+    } catch (e) { return null; }
+  }
 
-    <!-- Delete Card Confirmation Modal -->
-    <div id="confirm-modal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
-        <div class="relative bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform transition-all scale-95 opacity-0 duration-200">
-            <div class="mb-4 flex justify-center">
-                <div class="p-3 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6 4h13.876a1 1 0 00-1-1v-13a1 1 0 00-1-1H4.062a1 1 0 00-1 1v14a1 1 0 001 1z" />
-                    </svg>
-                </div>
-            </div>
-            <h3 class="text-lg font-bold mb-2">Delete Card?</h3>
-            <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">This action cannot be undone. Are you sure you want to remove this task?</p>
-            <div class="flex justify-center gap-3">
-                <button id="confirm-cancel" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Cancel</button>
-                <button id="confirm-delete" class="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-md transition-all active:scale-95">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- About Modal -->
-    <div id="about-modal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
-        <div class="relative bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl transform transition-all scale-95 opacity-0 duration-200 overflow-hidden">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <h2 class="text-xl font-bold">About</h2>
-                <button id="close-about-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div class="p-6 max-h-[70vh] overflow-y-auto text-slate-600 dark:text-slate-300 leading-relaxed space-y-4">
-                <p class="font-bold text-lg text-slate-800 dark:text-slate-100">WebTools: Kanban</p>
-                <p>A modern, responsive Kanban board implementation featuring drag-and-drop functionality, dark mode support, and local storage persistence.</p>
-                <p class="font-bold text-lg text-slate-800 dark:text-slate-100">A Dedication to My Family</p>
-                <p>Behind every project is a story, and behind this project are the two people who inspire me the most.</p>
-                <p>I dedicate this web application to my wonderful wife, whose love, support, patience, and understanding have given me the encouragement to keep learning, creating, and pursuing the things I enjoy. Her constant support means more to me than words can express, and I am truly grateful to have her by my side through every idea, challenge, and accomplishment.</p>
-                <p>I also dedicate this to my son, who inspires me to keep growing and becoming a better person. Watching him grow from a little boy into a young man is one of the greatest joys of my life. My hope is that he grows up to be a good man—kind, respectful, humble, responsible, and strong enough to face life's challenges with courage and faith. May he always remember to follow his dreams, learn from his mistakes, treat others with kindness, and never forget the values that matter most.</p>
-                <p>Everything I create carries a little piece of the inspiration I receive from them.</p>
-                <p>To my wife and my son: thank you for being my inspiration, my motivation, and one of the greatest blessings in my life. This work is dedicated to both of you, with all my love.</p>
-            </div>
-            <div class="p-6 border-t border-slate-200 dark:border-slate-700 flex justify-end">
-                <button id="about-ok-btn" class="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-lg shadow-md transition-all active:scale-95">Ok</button>
-            </div>
-        </div>
-    </div>
-    <!-- Delete Column Modal -->
-    <div id="delete-column-modal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
-        <div class="relative bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl transform transition-all scale-95 opacity-0 duration-200">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 id="delete-col-title" class="text-xl font-bold">Delete Column</h2>
-                    <button id="close-delete-col-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-                <div class="space-y-4">
-                    <p id="delete-col-message" class="text-slate-500 dark:text-slate-400 text-sm">Are you sure you want to delete this column?</p>
-                    <div id="delete-col-transfer-section" class="hidden space-y-2">
-                        <label class="block text-sm font-medium opacity-70">Transfer cards to:</label>
-                        <select id="delete-col-destination" class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none transition-all text-sm">
-                        </select>
-                    </div>
-                </div>
-                <div class="flex justify-end gap-3 pt-6">
-                    <button id="delete-col-cancel" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Cancel</button>
-                    <button id="delete-col-confirm" class="px-6 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-md transition-all active:scale-95">Delete Column</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Members Modal -->
-    <div id="members-modal" class="fixed inset-0 z-[85] hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
-        <div class="relative bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl transform transition-all scale-95 opacity-0 duration-200 overflow-hidden">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <h2 class="text-xl font-bold">Board Members</h2>
-                <button id="close-members-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div class="p-6 space-y-6">
-                <!-- Invite Member Form -->
-                <div id="invite-member-section" class="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-4">
-                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200">Invite New Member</h3>
-                    <form id="invite-member-form" class="flex flex-col sm:flex-row gap-3">
-                        <input type="email" id="invite-email" placeholder="email@example.com" required class="flex-1 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent focus:ring-2 focus:ring-primary-500 outline-none transition-all text-sm">
-                        <select id="invite-role" class="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent focus:ring-2 focus:ring-primary-500 outline-none transition-all text-sm">
-                            <option value="EDITOR">Editor</option>
-                            <option value="VIEWER">Viewer</option>
-                        </select>
-                        <button type="submit" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-lg shadow-sm transition-all active:scale-95 text-sm">Invite</button>
-                    </form>
-                </div>
-                <!-- Member List -->
-                <div id="members-list" class="space-y-3 max-h-[40vh] overflow-y-auto pr-2">
-                    <!-- Members will be injected here -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Import Input -->
-    <input type="file" id="import-file" accept=".json" class="hidden">
-    <!-- Archived Cards Modal -->
-    <div id="archived-cards-modal" class="fixed inset-0 z-[90] hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
-        <div class="relative bg-white dark:bg-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl transform transition-all scale-95 opacity-0 duration-200">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-bold">Archived Cards</h2>
-                    <button id="close-archived-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-                <div id="archived-cards-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto p-1">
-                    <!-- Archived cards will be injected here -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- JS Modules -->
-    <script type="module" src="src/js/app.js"></script>
+  /* ================= TEXT HELPERS ================= */
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .split('&').join('&amp;')
+      .split('<').join('&lt;')
+      .split('>').join('&gt;')
+      .split('"').join('&quot;');
+  }
+  function renderInline(text) {
+    var parts = String(text).split('`');
+    var out = '';
+    for (var i = 0; i < parts.length; i++) {
+      out += (i % 2 === 1) ? ('<code>' + escapeHtml(parts[i]) + '</code>') : escapeHtml(parts[i]);
+    }
+    return out;
+  }
+
+  function highlightHTML(src) {
+    var s = escapeHtml(src);
+    s = s.replace(/(&lt;\/?[a-zA-Z][a-zA-Z0-9-]*)([\s\S]*?)(\/?&gt;)/g, function (m, open, attrs, close) {
+      var attrHtml = attrs.replace(/([a-zA-Z-:]+)(=)(&quot;[\s\S]*?&quot;)/g,
+        '<span class="tok-attr">$1</span>$2<span class="tok-str">$3</span>');
+      return '<span class="tok-tag">' + open + '</span>' + attrHtml + '<span class="tok-tag">' + close + '</span>';
+    });
+    return s;
+  }
+  function highlightCSS(src) {
+    var lines = src.split('\n');
+    var out = lines.map(function (line) {
+      var trimmed = line.trim();
+      if (trimmed.slice(-1) === '{') {
+        var idx = line.lastIndexOf('{');
+        return '<span class="tok-sel">' + escapeHtml(line.slice(0, idx)) + '</span>{';
+      }
+      if (trimmed === '}' || trimmed === '') return escapeHtml(line);
+      var colonIdx = line.indexOf(':');
+      if (colonIdx > -1 && trimmed.slice(-1) === ';') {
+        var prop = line.slice(0, colonIdx);
+        var rest = line.slice(colonIdx + 1);
+        return '<span class="tok-prop">' + escapeHtml(prop) + '</span>:<span class="tok-val">' + escapeHtml(rest) + '</span>';
+      }
+      return escapeHtml(line);
+    });
+    return out.join('\n');
+  }
+  function highlightJS(src) {
+    var s = escapeHtml(src);
+    /* Keyword pass runs first, on plain text with no spans yet. Running it
+       after the other passes made it match the word "class" inside spans
+       like <span class="tok-str">, since "class" is also a JS keyword. */
+    s = s.replace(/\b(const|let|var|function|return|if|else|for|while|true|false|null|undefined|new|class|this|typeof|break|continue|console|document)\b/g,
+      '<span class="tok-kw">$1</span>');
+    s = s.replace(/(&quot;.*?&quot;|'.*?')/g, '<span class="tok-str">$1</span>');
+    s = s.replace(/(\/\/[^\n]*)/g, '<span class="tok-com">$1</span>');
+    s = s.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="tok-num">$1</span>');
+    return s;
+  }
+
+  /* ================= PROGRESS HELPERS ================= */
+  function progressForCourse(courseId) {
+    if (!progress[courseId]) progress[courseId] = { completed: [], quizBest: 0, quizPassed: false };
+    return progress[courseId];
+  }
+  function isLessonComplete(courseId, lessonId) {
+    return progressForCourse(courseId).completed.indexOf(lessonId) !== -1;
+  }
+  function markComplete(courseId, lessonId) {
+    var p = progressForCourse(courseId);
+    if (p.completed.indexOf(lessonId) === -1) p.completed.push(lessonId);
+    saveProgress();
+  }
+  function totalLessonsCompleted() {
+    var sum = 0;
+    COURSES.forEach(function (c) { sum += progressForCourse(c.id).completed.length; });
+    return sum;
+  }
+  function totalLessons() {
+    var sum = 0;
+    COURSES.forEach(function (c) { sum += c.lessons.length; });
+    return sum;
+  }
+
+  /* ================= ROUTE HELPERS ================= */
+  function findCourse(id) {
+    for (var i = 0; i < COURSES.length; i++) if (COURSES[i].id === id) return COURSES[i];
+    return null;
+  }
+  function currentCourse() { return findCourse(route.courseId); }
+  function currentLesson() {
+    var c = currentCourse();
+    return c ? c.lessons[route.lessonIdx] : null;
+  }
+  function lessonKey(courseId, lessonId) { return courseId + ':' + lessonId; }
+  function getSandboxCode(course, lesson) {
+    var saved = loadSandbox(lessonKey(course.id, lesson.id));
+    if (saved) return saved;
+    var starter = lesson.sandbox.starter;
+    return { html: starter.html || '', css: starter.css || '', js: starter.js || '' };
+  }
+
+  /* ================= SANDBOX ================= */
+  function buildSrcdoc(lesson, code) {
+    var type = lesson.sandbox.type;
+    if (type === 'html') {
+      return code.html || '';
+    }
+    if (type === 'tailwind') {
+      return '<script src="https://cdn.tailwindcss.com"><\/script>' + (code.html || '');
+    }
+    if (type === 'html-css') {
+      return '<style>' + (code.css || '') + '</style>' + (code.html || '');
+    }
+    if (type === 'js') {
+      var consoleStyle = '<style>#__console{position:fixed;left:0;right:0;bottom:0;max-height:35%;overflow:auto;margin:0;padding:10px 12px;background:#161B22;color:#8FE3B0;font-family:monospace;font-size:12px;white-space:pre-wrap;border-top:2px solid #3E6990;}</style>';
+      var runner = '<script>(function(){var out=document.getElementById("__console");var lines=[];function paint(){out.textContent=lines.join("\\n");}var orig=console.log;console.log=function(){var parts=[];for(var i=0;i<arguments.length;i++){var a=arguments[i];try{parts.push(typeof a==="object"?JSON.stringify(a):String(a));}catch(e){parts.push(String(a));}}lines.push(parts.join(" "));paint();orig.apply(console,arguments);};try{' + (code.js || '') + '\n}catch(e){lines.push("Error: "+e.message);paint();}})();<\/script>';
+      return (code.html || '') + consoleStyle + '<pre id="__console"></pre>' + runner;
+    }
+    return '';
+  }
+  function updatePreview() {
+    var course = currentCourse(), lesson = currentLesson();
+    if (!course || !lesson) return;
+    var type = lesson.sandbox.type;
+    var code = {};
+    var htmlTa = document.getElementById('editor-html');
+    var cssTa = document.getElementById('editor-css');
+    var jsTa = document.getElementById('editor-js');
+    if (htmlTa) code.html = htmlTa.value;
+    if (cssTa) code.css = cssTa.value;
+    if (jsTa) code.js = jsTa.value;
+    var iframe = document.getElementById('preview-frame');
+    if (iframe) iframe.srcdoc = buildSrcdoc(lesson, code);
+    saveSandbox(lessonKey(course.id, lesson.id), code);
+  }
+  function scheduleAutoRun() {
+    /* Only auto-run while typing for HTML/CSS sandboxes, which are cheap to
+       re-render. JS sandboxes would re-execute partially-typed code on every
+       keystroke (throwing errors mid-word), and Tailwind sandboxes would
+       reload the CDN script and flicker on every keystroke. Both instead
+       update only on an explicit Run click, on lesson load, and on Reset. */
+    var lesson = currentLesson();
+    if (!lesson || (lesson.sandbox.type !== 'html' && lesson.sandbox.type !== 'html-css')) return;
+    clearTimeout(autoRunTimer);
+    autoRunTimer = setTimeout(updatePreview, 500);
+  }
+  function resetSandboxToStarter() {
+    var lesson = currentLesson();
+    if (!lesson) return;
+    var starter = lesson.sandbox.starter;
+    var htmlTa = document.getElementById('editor-html');
+    var cssTa = document.getElementById('editor-css');
+    var jsTa = document.getElementById('editor-js');
+    if (htmlTa) htmlTa.value = starter.html || '';
+    if (cssTa) cssTa.value = starter.css || '';
+    if (jsTa) jsTa.value = starter.js || '';
+    updatePreview();
+  }
+  function switchTab(tabName) {
+    document.querySelectorAll('.editor-tab').forEach(function (t) {
+      t.classList.toggle('active', t.getAttribute('data-tab') === tabName);
+    });
+    document.querySelectorAll('.editor-textarea').forEach(function (t) {
+      t.classList.toggle('hidden', t.getAttribute('data-field') !== tabName);
+    });
+  }
+
+  /* ================= QUIZ ================= */
+  function getQuizState(courseId) {
+    if (!quizState[courseId]) quizState[courseId] = { answers: {}, submitted: false, score: 0, correctCount: 0 };
+    return quizState[courseId];
+  }
+  function selectAnswer(qIndex, optIndex) {
+    var qs = getQuizState(route.courseId);
+    if (qs.submitted) return;
+    qs.answers[qIndex] = optIndex;
+    var group = document.querySelector('.quiz-question[data-q="' + qIndex + '"]');
+    if (group) {
+      group.querySelectorAll('.quiz-option').forEach(function (o) {
+        o.classList.toggle('selected', parseInt(o.getAttribute('data-opt'), 10) === optIndex);
+      });
+    }
+  }
+  function submitQuiz() {
+    var course = currentCourse();
+    var qs = getQuizState(route.courseId);
+    var correctCount = 0;
+    course.quiz.forEach(function (q, qi) { if (qs.answers[qi] === q.correct) correctCount++; });
+    var pct = Math.round((correctCount / course.quiz.length) * 100);
+    qs.submitted = true;
+    qs.score = pct;
+    qs.correctCount = correctCount;
+    var p = progressForCourse(route.courseId);
+    p.quizBest = Math.max(p.quizBest || 0, pct);
+    if (pct >= 70) p.quizPassed = true;
+    saveProgress();
+  }
+  function resetQuiz(courseId) {
+    quizState[courseId] = { answers: {}, submitted: false, score: 0, correctCount: 0 };
+  }
+
+  /* ================= THEME ================= */
+  function isDarkActive() {
+    var explicit = document.documentElement.getAttribute('data-theme');
+    if (explicit) return explicit === 'dark';
+    return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+  function toggleTheme() {
+    var next = isDarkActive() ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('db_theme', next); } catch (e) { /* ignore */ }
+    updateThemeToggleLabel();
+  }
+  function updateThemeToggleLabel() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    var dark = isDarkActive();
+    btn.innerHTML = dark ? '&#9728;' : '&#9789;';
+    btn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+  }
+
+  /* ================= VIEWS ================= */
+  function renderHome() {
+    var cards = COURSES.map(function (c, i) {
+      var p = progressForCourse(c.id);
+      var total = c.lessons.length;
+      var done = p.completed.length;
+      var pct = Math.round((done / total) * 100);
+      var status = p.quizPassed ? 'Signed off' : (done === total ? 'Ready for inspection' : (done > 0 ? 'In progress' : 'Not started'));
+      return '' +
+        '<button class="sheet" data-action="go-track" data-course="' + c.id + '" style="--tab-color:' + c.color + '">' +
+          '<div class="sheet-tab"></div>' +
+          '<div class="sheet-body">' +
+            '<div class="sheet-meta">SHEET ' + String(i + 1).padStart(2, '0') + ' &middot; ' + done + '/' + total + ' LESSONS</div>' +
+            '<h3 class="sheet-title">' + c.title + '</h3>' +
+            '<p class="sheet-desc">' + c.description + '</p>' +
+            '<div class="sheet-progress"><div class="sheet-progress-fill" style="width:' + pct + '%"></div></div>' +
+            '<div class="sheet-status">' + status + '</div>' +
+          '</div>' +
+        '</button>';
+    }).join('');
+
+    return '' +
+      '<section class="hero">' +
+        '<div class="title-block"><span class="stamp-label">Draftbench &mdash; interactive coding primer</span></div>' +
+        '<h1 class="hero-title">Build things. Understand why they work.</h1>' +
+        '<p class="hero-sub">Four short courses in HTML, CSS, JavaScript, and Tailwind CSS. Every lesson has a live sandbox to try the code, and a short inspection quiz at the end to check what stuck.</p>' +
+      '</section>' +
+      '<section class="sheet-grid">' + cards + '</section>';
+  }
+
+  function renderTrack(courseId) {
+    var course = findCourse(courseId);
+    var p = progressForCourse(courseId);
+    var total = course.lessons.length;
+    var done = p.completed.length;
+
+    var rows = course.lessons.map(function (l, i) {
+      var complete = p.completed.indexOf(l.id) !== -1;
+      return '' +
+        '<button class="lesson-row" data-action="go-lesson" data-course="' + course.id + '" data-lesson="' + i + '">' +
+          '<span class="lesson-num">' + String(i + 1).padStart(2, '0') + '</span>' +
+          '<span class="lesson-row-title">' + l.title + '</span>' +
+          '<span class="lesson-check ' + (complete ? 'done' : '') + '">' + (complete ? '&#10003;' : '') + '</span>' +
+        '</button>';
+    }).join('');
+
+    var quizNote = p.quizPassed
+      ? ('Passed with a best score of ' + p.quizBest + '%. Retake any time.')
+      : (done < total ? 'This can be taken early, but finishing every lesson first will help.' : 'All lessons are complete. Time for inspection.');
+
+    return '' +
+      '<nav class="breadcrumb"><button data-action="go-home">Home</button> / <span>' + course.title + '</span></nav>' +
+      '<header class="track-header" style="--tab-color:' + course.color + '">' +
+        '<div class="track-tab"></div>' +
+        '<div>' +
+          '<h1>' + course.title + '</h1>' +
+          '<p>' + course.description + '</p>' +
+          '<div class="sheet-progress wide" style="--tab-color:' + course.color + '"><div class="sheet-progress-fill" style="width:' + Math.round(done / total * 100) + '%"></div></div>' +
+          '<span class="track-progress-label">' + done + ' of ' + total + ' lessons complete</span>' +
+        '</div>' +
+      '</header>' +
+      '<div class="lesson-list">' + rows + '</div>' +
+      '<button class="inspection-card" data-action="go-quiz" data-course="' + course.id + '">' +
+        '<div>' +
+          '<div class="sheet-meta">FINAL INSPECTION</div>' +
+          '<h3>' + course.title + ' Quiz</h3>' +
+          '<p>' + quizNote + '</p>' +
+        '</div>' +
+        '<span class="inspection-arrow">' + (p.quizPassed ? '&#10003;' : '&rarr;') + '</span>' +
+      '</button>';
+  }
+
+  function buildEditorHtml(lesson, code) {
+    var type = lesson.sandbox.type;
+    var tabs = '', textareas = '';
+    if (type === 'html' || type === 'tailwind') {
+      tabs = '<div class="editor-tabs"><span class="editor-tab active" data-action="switch-tab" data-tab="html">HTML</span></div>';
+      textareas = '<textarea id="editor-html" class="editor-textarea" data-field="html" spellcheck="false">' + escapeHtml(code.html || '') + '</textarea>';
+    } else if (type === 'html-css') {
+      tabs = '<div class="editor-tabs">' +
+        '<span class="editor-tab active" data-action="switch-tab" data-tab="html">HTML</span>' +
+        '<span class="editor-tab" data-action="switch-tab" data-tab="css">CSS</span>' +
+      '</div>';
+      textareas =
+        '<textarea id="editor-html" class="editor-textarea" data-field="html" spellcheck="false">' + escapeHtml(code.html || '') + '</textarea>' +
+        '<textarea id="editor-css" class="editor-textarea hidden" data-field="css" spellcheck="false">' + escapeHtml(code.css || '') + '</textarea>';
+    } else if (type === 'js') {
+      tabs = '<div class="editor-tabs">' +
+        '<span class="editor-tab active" data-action="switch-tab" data-tab="html">HTML</span>' +
+        '<span class="editor-tab" data-action="switch-tab" data-tab="js">JS</span>' +
+      '</div>';
+      textareas =
+        '<textarea id="editor-html" class="editor-textarea" data-field="html" spellcheck="false">' + escapeHtml(code.html || '') + '</textarea>' +
+        '<textarea id="editor-js" class="editor-textarea hidden" data-field="js" spellcheck="false">' + escapeHtml(code.js || '') + '</textarea>';
+    }
+    var needsRunHint = (type === 'js' || type === 'tailwind');
+    return '' +
+      '<div class="editor-card">' + tabs + textareas + '</div>' +
+      '<div class="editor-toolbar">' +
+        '<button class="btn small primary" data-action="run-sandbox">&#9654; Run</button>' +
+        '<button class="btn small ghost" data-action="reset-sandbox">Reset</button>' +
+        (needsRunHint ? '<span class="editor-hint">Click Run to see changes</span>' : '') +
+      '</div>' +
+      '<div class="preview-card">' +
+        '<div class="preview-head">Preview</div>' +
+        '<iframe id="preview-frame" class="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms" title="Live preview"></iframe>' +
+      '</div>';
+  }
+
+  function renderLesson(courseId, lessonIdx) {
+    var course = findCourse(courseId);
+    var lesson = course.lessons[lessonIdx];
+    var isFirst = lessonIdx === 0;
+    var isLast = lessonIdx === course.lessons.length - 1;
+    var code = getSandboxCode(course, lesson);
+    var complete = isLessonComplete(course.id, lesson.id);
+
+    var contentHtml = lesson.content.map(function (p) { return '<p>' + renderInline(p) + '</p>'; }).join('');
+    var highlighted = lesson.exampleLang === 'css' ? highlightCSS(lesson.example)
+      : lesson.exampleLang === 'js' ? highlightJS(lesson.example)
+      : highlightHTML(lesson.example);
+
+    return '' +
+      '<nav class="breadcrumb">' +
+        '<button data-action="go-home">Home</button> / ' +
+        '<button data-action="go-track" data-course="' + course.id + '">' + course.title + '</button> / ' +
+        '<span>' + lesson.title + '</span>' +
+      '</nav>' +
+      '<div class="lesson-grid">' +
+        '<div class="panel plan-panel">' +
+          '<div class="panel-label">THE PLAN</div>' +
+          '<h1>' + lesson.title + '</h1>' +
+          '<div class="lesson-copy">' + contentHtml + '</div>' +
+          '<div class="code-card">' +
+            '<div class="code-card-head">Example</div>' +
+            '<pre class="code-block"><code>' + highlighted + '</code></pre>' +
+          '</div>' +
+        '</div>' +
+        '<div class="panel bench-panel">' +
+          '<div class="panel-label accent">THE BENCH &mdash; try it live</div>' +
+          buildEditorHtml(lesson, code) +
+        '</div>' +
+      '</div>' +
+      '<div class="lesson-nav">' +
+        '<button class="btn ghost" data-action="prev-lesson"' + (isFirst ? ' disabled' : '') + '>&larr; Previous</button>' +
+        '<button class="btn primary" data-action="complete-lesson">' + (complete ? 'Mark reviewed' : 'Mark complete') + (isLast ? ' &amp; go to inspection' : ' &amp; continue') + ' &rarr;</button>' +
+      '</div>';
+  }
+
+  function renderQuiz(courseId) {
+    var course = findCourse(courseId);
+    var qs = getQuizState(courseId);
+
+    var questions = course.quiz.map(function (q, qi) {
+      var options = q.options.map(function (opt, oi) {
+        var selected = qs.answers[qi] === oi;
+        var cls = 'quiz-option' + (selected ? ' selected' : '');
+        if (qs.submitted) {
+          if (oi === q.correct) cls += ' correct';
+          else if (selected && oi !== q.correct) cls += ' incorrect';
+        }
+        return '<button class="' + cls + '" data-action="select-answer" data-q="' + qi + '" data-opt="' + oi + '"' + (qs.submitted ? ' disabled' : '') + '>' + renderInline(opt) + '</button>';
+      }).join('');
+      return '' +
+        '<div class="quiz-question" data-q="' + qi + '">' +
+          '<div class="quiz-q-label">Question ' + (qi + 1) + '</div>' +
+          '<p class="quiz-q-text">' + renderInline(q.question) + '</p>' +
+          '<div class="quiz-options">' + options + '</div>' +
+          (qs.submitted ? '<p class="quiz-explain">' + renderInline(q.explanation) + '</p>' : '') +
+        '</div>';
+    }).join('');
+
+    var resultBlock = '';
+    if (qs.submitted) {
+      var passed = qs.score >= 70;
+      resultBlock = '' +
+        '<div class="stamp-result ' + (passed ? 'pass' : 'fail') + '">' +
+          '<div class="stamp">' + (passed ? 'PASSED' : 'REVISE') + '</div>' +
+          '<p>' + qs.correctCount + ' of ' + course.quiz.length + ' correct, ' + qs.score + '%</p>' +
+        '</div>';
+    }
+
+    return '' +
+      '<nav class="breadcrumb">' +
+        '<button data-action="go-home">Home</button> / ' +
+        '<button data-action="go-track" data-course="' + course.id + '">' + course.title + '</button> / ' +
+        '<span>Final Inspection</span>' +
+      '</nav>' +
+      '<header class="quiz-header">' +
+        '<div class="panel-label accent">FINAL INSPECTION</div>' +
+        '<h1>' + course.title + ' Quiz</h1>' +
+        '<p>Answer all ' + course.quiz.length + ' questions, then submit for inspection.' + (qs.submitted ? '' : ' A score of 70% or higher passes.') + '</p>' +
+      '</header>' +
+      resultBlock +
+      '<div class="quiz-list">' + questions + '</div>' +
+      (qs.submitted
+        ? '<button class="btn primary" data-action="retake-quiz" data-course="' + course.id + '">Retake quiz</button>'
+        : '<button class="btn primary" data-action="submit-quiz">Submit for inspection</button>');
+  }
+
+  /* ================= RENDER DISPATCH ================= */
+  function render() {
+    var app = document.getElementById('app');
+    if (route.view === 'home') {
+      app.innerHTML = renderHome();
+    } else if (route.view === 'track') {
+      app.innerHTML = renderTrack(route.courseId);
+    } else if (route.view === 'lesson') {
+      app.innerHTML = renderLesson(route.courseId, route.lessonIdx);
+      updatePreview();
+    } else if (route.view === 'quiz') {
+      app.innerHTML = renderQuiz(route.courseId);
+    }
+    renderHeaderProgress();
+    window.scrollTo(0, 0);
+  }
+  function renderHeaderProgress() {
+    var el = document.getElementById('header-progress');
+    if (el) el.textContent = totalLessonsCompleted() + ' / ' + totalLessons() + ' lessons';
+  }
+
+  /* ================= EVENTS ================= */
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-action]');
+    if (!el) return;
+    var action = el.getAttribute('data-action');
+    var course;
+    if (action === 'go-home') { route = { view: 'home' }; render(); }
+    else if (action === 'go-track') { route = { view: 'track', courseId: el.getAttribute('data-course') }; render(); }
+    else if (action === 'go-lesson') { route = { view: 'lesson', courseId: el.getAttribute('data-course'), lessonIdx: parseInt(el.getAttribute('data-lesson'), 10) }; render(); }
+    else if (action === 'go-quiz') { route = { view: 'quiz', courseId: el.getAttribute('data-course') }; render(); }
+    else if (action === 'prev-lesson') { route.lessonIdx = Math.max(0, route.lessonIdx - 1); render(); }
+    else if (action === 'complete-lesson') {
+      markComplete(route.courseId, currentLesson().id);
+      course = currentCourse();
+      if (route.lessonIdx < course.lessons.length - 1) route.lessonIdx++;
+      else route.view = 'quiz';
+      render();
+    }
+    else if (action === 'run-sandbox') { updatePreview(); }
+    else if (action === 'reset-sandbox') { resetSandboxToStarter(); }
+    else if (action === 'switch-tab') { switchTab(el.getAttribute('data-tab')); }
+    else if (action === 'select-answer') { selectAnswer(el.getAttribute('data-q'), parseInt(el.getAttribute('data-opt'), 10)); }
+    else if (action === 'submit-quiz') { submitQuiz(); render(); }
+    else if (action === 'retake-quiz') { resetQuiz(el.getAttribute('data-course')); render(); }
+    else if (action === 'toggle-theme') { toggleTheme(); }
+  });
+  document.addEventListener('input', function (e) {
+    if (e.target.classList && e.target.classList.contains('editor-textarea')) scheduleAutoRun();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.classList && e.target.classList.contains('editor-textarea') && e.key === 'Tab') {
+      e.preventDefault();
+      var ta = e.target, start = ta.selectionStart, end = ta.selectionEnd;
+      ta.value = ta.value.slice(0, start) + '  ' + ta.value.slice(end);
+      ta.selectionStart = ta.selectionEnd = start + 2;
+      scheduleAutoRun();
+    }
+  });
+
+  /* ================= INIT ================= */
+  function init() {
+    var savedTheme = null;
+    try { savedTheme = localStorage.getItem('db_theme'); } catch (e) { /* ignore */ }
+    if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeToggleLabel();
+    render();
+  }
+  init();
+})();
+</script>
 </body>
 </html>
