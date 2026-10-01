@@ -1,4 +1,4 @@
-const BASE_URL = '/kanban-backend';
+const BASE_URL = 'https://api.ikoyski.top/kanban-backend';
 
 class ApiClient {
   static async request(endpoint, options = {}) {
