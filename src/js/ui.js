@@ -82,7 +82,7 @@ export const UI = {
             <div class="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-6">
                 <div class="bg-slate-200 dark:bg-slate-800 p-6 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6 0h3m-3 4h3" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9[...]
                     </svg>
                 </div>
                 <div>
@@ -112,7 +112,7 @@ export const UI = {
         div.innerHTML = `
             <div class="flex items-center justify-between mb-4 px-1">
                 <div class="flex items-center gap-2">
-                    <div class="column-drag-handle cursor-grab active:cursor-grabbing p-1 text-slate-400 hover:text-primary-600 transition-colors rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 ${isViewer ? 'hidden' : ''}" title="Drag to reorder column">
+                    <div class="column-drag-handle cursor-grab active:cursor-grabbing p-1 text-slate-400 hover:text-primary-600 transition-colors rounded-md hover:bg-slate-200 dark:hover:bg-slate[...]
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
                         </svg>
@@ -121,12 +121,12 @@ export const UI = {
                     <div class="flex gap-1 opacity-60 hover:opacity-100 transition-opacity ${isViewer ? 'hidden' : ''}">
                         <button class="rename-col-btn text-slate-400 hover:text-primary-600 transition-colors" title="Rename Column">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.[...]
                             </svg>
                         </button>
                         <button class="delete-col-btn text-slate-400 hover:text-red-600 transition-colors" title="Delete Column">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1[...]
                             </svg>
                         </button>
                     </div>
@@ -189,7 +189,7 @@ export const UI = {
                     <div class="flex flex-wrap gap-1">
                         ${labelsHTML}
                     </div>
-                    <div class="drag-handle cursor-grab active:cursor-grabbing p-1.5 text-slate-400 dark:text-slate-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors rounded-md hover:bg-slate-200 dark:hover:bg-slate-700" title="Drag to move">
+                    <div class="drag-handle cursor-grab active:cursor-grabbing p-1.5 text-slate-400 dark:text-slate-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors rounde[...]
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
                         </svg>
@@ -203,7 +203,7 @@ export const UI = {
                         ${card.dueDate ? `
                             <div class="flex items-center gap-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z[...]
                                 </svg>
                                 <span>${card.dueDate}</span>
                             </div>
@@ -211,7 +211,7 @@ export const UI = {
                         ${card.commentCount !== undefined ? `
                             <div class="flex items-center gap-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0[...]
                                 </svg>
                                 <span>${card.commentCount}</span>
                             </div>
@@ -225,7 +225,7 @@ export const UI = {
                         </button>
                         <button class="delete-btn p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-slate-400 hover:text-red-600 transition-colors" title="Delete">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1[...]
                             </svg>
                         </button>
                     </div>
@@ -416,7 +416,7 @@ export const UI = {
                     ${role === 'OWNER' ? `
                         <button class="text-red-500 hover:text-red-700 transition-colors" data-user-id="${m.userId}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1[...]
                             </svg>
                         </button>
                     ` : ''}
@@ -455,7 +455,7 @@ export const UI = {
         const input = document.createElement(multiline ? 'textarea' : 'input');
         if (!multiline) input.type = type;
         input.value = value;
-        input.className = 'inline-edit-input px-2 py-1 rounded border border-primary-300 dark:border-primary-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm';
+        input.className = 'inline-edit-input px-2 py-1 rounded border border-primary-300 dark:border-primary-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none f[...]
         if (multiline) {
             input.className += ' w-full h-24 resize-none';
         } else {
@@ -463,12 +463,14 @@ export const UI = {
         }
 
         const saveBtn = document.createElement('button');
-        saveBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`;
+        saveBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linej[...]
         saveBtn.className = 'p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors';
+        saveBtn.type = 'button';
 
         const cancelBtn = document.createElement('button');
-        cancelBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>`;
+        cancelBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linej[...]
         cancelBtn.className = 'p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors';
+        cancelBtn.type = 'button';
 
         const wrapper = document.createElement(multiline ? 'div' : 'span');
         wrapper.className = multiline ? 'flex flex-col gap-2 w-full' : 'flex items-center gap-1 w-full';
@@ -495,7 +497,10 @@ export const UI = {
             delete displayEl.dataset.editing;
         };
 
-        cancelBtn.onclick = restore;
+        cancelBtn.onclick = (e) => {
+            e.preventDefault();
+            restore();
+        };
 
         const handleSave = async (e) => {
             if (e?.type === 'keydown' && e.key !== 'Enter') return;
@@ -535,12 +540,12 @@ export const UI = {
             <div class="detail-scroll max-h-[65vh] overflow-y-auto space-y-6 pr-2">
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-slate-500 tracking-wider">Title</label>
-                    <div class="detail-title text-lg font-bold text-slate-800 dark:text-slate-100 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded transition-colors">${card.title}</div>
+                    <div class="detail-title text-lg font-bold text-slate-800 dark:text-slate-100 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded transition-colors">${card.ti[...]
                 </div>
 
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-slate-500 tracking-wider">Description</label>
-                    <div class="detail-description text-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded transition-colors whitespace-pre-wrap">${card.description || 'No description - click to add one'}</div>
+                    <div class="detail-description text-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded transition-colors whitespace-pre[...]
                 </div>
 
                 <div class="flex flex-wrap gap-4">
@@ -548,20 +553,20 @@ export const UI = {
                         <label class="text-xs font-semibold text-slate-500 tracking-wider">Priority</label>
                         <div class="detail-priority flex gap-2 cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                             ${['LOW', 'MEDIUM', 'HIGH'].map(p => `
-                                <span data-priority="${p}" class="px-2 py-1 text-xs font-bold rounded border cursor-pointer ${p === card.priority ? 'bg-primary-100 border-primary-500 text-primary-700 dark:bg-primary-900/30' : 'bg-slate-100 border-slate-300 text-slate-600 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-400 hover:border-primary-400'}">${p}</span>
+                                <span data-priority="${p}" class="px-2 py-1 text-xs font-bold rounded border cursor-pointer ${p === card.priority ? 'bg-primary-100 border-primary-500 text-primary[...]
                             `).join('')}
                         </div>
                     </div>
                     <div class="space-y-1">
                         <label class="text-xs font-semibold text-slate-500 tracking-wider">Due Date</label>
-                        <div class="detail-date text-sm text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded transition-colors">${card.dueDate || 'No date set'}</div>
+                        <div class="detail-date text-sm text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded transition-colors">${card.dueDate |[...]
                     </div>
                 </div>
 
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-slate-500 tracking-wider">Labels (comma separated)</label>
                     <div class="detail-labels flex flex-wrap gap-1 cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                        ${card.labels.length ? card.labels.map(l => `<span class="text-xs px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400">${l}</span>`).join(' ') : '<span class="text-sm text-slate-400 italic">No labels - click to add</span>'}
+                        ${card.labels.length ? card.labels.map(l => `<span class="text-xs px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400">${l}</span>`).join[...]
                     </div>
                 </div>
 
@@ -571,7 +576,7 @@ export const UI = {
                         <div class="text-center py-4 text-sm text-slate-400">Loading comments...</div>
                     </div>
                     <div class="flex gap-2">
-                        <textarea id="comment-input" class="flex-1 p-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none resize-none h-20" placeholder="Write a comment..."></textarea>
+                        <textarea id="comment-input" class="flex-1 p-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-1[...]
                         <button id="add-comment-btn" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-lg transition-all active:scale-95">Comment</button>
                     </div>
                 </div>
@@ -579,10 +584,10 @@ export const UI = {
 
             <div class="pt-6 mt-6 flex justify-between items-center border-t border-slate-200 dark:border-slate-700">
                 <div class="flex gap-3">
-                    <button id="archive-card-btn" class="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Archive</button>
+                    <button id="archive-card-btn" class="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">A[...]
                     <button id="delete-card-btn" class="px-4 py-2 text-sm font-semibold text-red-500 hover:text-red-700 transition-colors">Delete</button>
                 </div>
-                <button class="close-detail-btn px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">Close</button>
+                <button class="close-detail-btn px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600[...]
             </div>
         `;
 
@@ -650,7 +655,7 @@ export const UI = {
                         <span class="text-[10px] text-slate-400">${new Date(c.createdAt).toLocaleString()}</span>
                     </div>
                     <button class="delete-comment-btn text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100" data-comment-id="${c.id}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-w[...]
                     </button>
                 </div>
                 <div class="text-sm text-slate-600 dark:text-slate-400">${c.content}</div>
@@ -673,7 +678,7 @@ export const UI = {
                 <div class="flex items-center justify-between mt-auto pt-3 border-t border-slate-100 dark:border-slate-700">
                     <span class="text-[10px] text-slate-400">Archived: ${card.archivedAt ? new Date(card.archivedAt).toLocaleDateString() : 'Unknown'}</span>
                     ${role !== 'VIEWER' ? `
-                        <button class="restore-card-btn text-xs font-bold text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors" data-card-id="${card.id}">
+                        <button class="restore-card-btn text-xs font-bold text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors" data-card-id[...]
                             Restore
                         </button>
                     ` : ''}
