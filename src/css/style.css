@@ -82,3 +82,187 @@ body {
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
+/* ------------------------------------------------------------------ */
+/* Rich text editor (Quill Snow) - sizing, focus ring and dark mode    */
+/* ------------------------------------------------------------------ */
+.rich-editor .ql-toolbar.ql-snow {
+    border-color: rgb(226 232 240);
+    border-radius: 0.5rem 0.5rem 0 0;
+    background: rgb(248 250 252);
+    padding: 4px 6px;
+}
+
+.rich-editor .ql-container.ql-snow {
+    border-color: rgb(226 232 240);
+    border-radius: 0 0 0.5rem 0.5rem;
+    font-family: inherit;
+    font-size: 0.875rem;
+}
+
+.rich-editor .ql-editor {
+    min-height: 9rem;
+    max-height: 40vh;
+    overflow-y: auto;
+    padding: 0.5rem 0.75rem;
+}
+
+.rich-editor--compact .ql-editor {
+    min-height: 4.5rem;
+    max-height: 12rem;
+}
+
+.rich-editor .ql-editor.ql-blank::before {
+    font-style: normal;
+    color: rgb(148 163 184);
+}
+
+.rich-editor:focus-within .ql-toolbar.ql-snow,
+.rich-editor:focus-within .ql-container.ql-snow {
+    border-color: rgb(59 130 246);
+}
+
+.dark .rich-editor .ql-toolbar.ql-snow {
+    background: rgb(15 23 42);
+    border-color: rgb(51 65 85);
+}
+
+.dark .rich-editor .ql-container.ql-snow {
+    border-color: rgb(51 65 85);
+    color: rgb(226 232 240);
+}
+
+.dark .rich-editor:focus-within .ql-toolbar.ql-snow,
+.dark .rich-editor:focus-within .ql-container.ql-snow {
+    border-color: rgb(59 130 246);
+}
+
+.dark .rich-editor .ql-snow .ql-stroke {
+    stroke: rgb(203 213 225);
+}
+
+.dark .rich-editor .ql-snow .ql-fill {
+    fill: rgb(203 213 225);
+}
+
+.dark .rich-editor .ql-snow.ql-toolbar button:hover .ql-stroke,
+.dark .rich-editor .ql-snow.ql-toolbar button.ql-active .ql-stroke {
+    stroke: rgb(96 165 250);
+}
+
+.dark .rich-editor .ql-snow.ql-toolbar button:hover .ql-fill,
+.dark .rich-editor .ql-snow.ql-toolbar button.ql-active .ql-fill {
+    fill: rgb(96 165 250);
+}
+
+.dark .rich-editor .ql-editor.ql-blank::before {
+    color: rgb(100 116 139);
+}
+
+.dark .rich-editor .ql-snow .ql-tooltip {
+    background: rgb(30 41 59);
+    color: rgb(226 232 240);
+    border-color: rgb(51 65 85);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
+}
+
+.dark .rich-editor .ql-snow .ql-tooltip input[type="text"] {
+    background: rgb(15 23 42);
+    color: rgb(226 232 240);
+    border-color: rgb(51 65 85);
+}
+
+.dark .rich-editor .ql-snow .ql-tooltip a {
+    color: rgb(96 165 250);
+}
+
+/* ------------------------------------------------------------------ */
+/* Rendered rich text (descriptions and comments)                      */
+/* Tailwind's preflight strips list/quote styling, so restore it here. */
+/* ------------------------------------------------------------------ */
+.rich-content {
+    overflow-wrap: anywhere;
+}
+
+.rich-content p,
+.rich-content div {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.rich-content ul,
+.rich-content ol {
+    margin: 0.25rem 0;
+    padding-left: 1.5rem;
+}
+
+.rich-content ul {
+    list-style: disc;
+}
+
+.rich-content ol {
+    list-style: decimal;
+}
+
+.rich-content blockquote {
+    margin: 0.25rem 0;
+    padding-left: 0.75rem;
+    border-left: 3px solid rgb(203 213 225);
+    color: rgb(100 116 139);
+}
+
+.dark .rich-content blockquote {
+    border-left-color: rgb(71 85 105);
+    color: rgb(148 163 184);
+}
+
+.rich-content code {
+    background: rgb(148 163 184 / 0.2);
+    border-radius: 0.25rem;
+    padding: 0 0.25rem;
+    font-size: 0.85em;
+}
+
+.rich-content pre {
+    margin: 0.25rem 0;
+    padding: 0.5rem 0.75rem;
+    background: rgb(15 23 42);
+    color: rgb(226 232 240);
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    white-space: pre;
+    overflow-x: auto;
+}
+
+.rich-content pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+}
+
+.rich-content a {
+    color: rgb(37 99 235);
+    text-decoration: underline;
+}
+
+.dark .rich-content a {
+    color: rgb(96 165 250);
+}
+
+.rich-content h1,
+.rich-content h2,
+.rich-content h3 {
+    margin: 0.25rem 0;
+    font-weight: 700;
+    color: rgb(30 41 59);
+}
+
+.dark .rich-content h1,
+.dark .rich-content h2,
+.dark .rich-content h3 {
+    color: rgb(226 232 240);
+}
+
+.rich-content h1 { font-size: 1.25rem; }
+.rich-content h2 { font-size: 1.125rem; }
+.rich-content h3 { font-size: 1rem; }

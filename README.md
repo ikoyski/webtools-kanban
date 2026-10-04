@@ -12,7 +12,8 @@ A modern, responsive Kanban board implementation featuring drag-and-drop functio
 - **Dark Mode**: Seamlessly switch between light and dark themes.
 - **REST API**: Your boards and cards are persisted in a PostgreSQL database via a REST API.
 - **Responsive Design**: Works on desktops, tablets, and mobile devices.
-- **Card Management**: Add, edit, and delete cards with priority levels, due dates, and custom labels.
+- **Card Management**: Add, edit, and delete cards with priority levels, due dates, custom labels, and rich-text (WYSIWYG) descriptions.
+- **Rich-Text Comments**: Card comments support the same WYSIWYG formatting (bold, lists, links, code blocks, etc.) as descriptions.
 - **Column Management**: Create new columns, rename existing ones, and delete columns with an integrated card transfer mechanism to prevent data loss.
 - **Optimistic UI**: Instant visual feedback for actions like moving cards, with background synchronization to the API.
 - **Bot Protection**: Integration with Cloudflare Turnstile to secure Login and Signup forms against automated attacks.
@@ -33,7 +34,8 @@ A modern, responsive Kanban board implementation featuring drag-and-drop functio
     └── js/
         ├── app.js       # Main application controller (KanbanApp class)
         ├── api.js         # REST API client for data persistence (ApiClient class)
-        └── ui.js        # UI rendering and DOM manipulation (UI object)
+        ├── ui.js        # UI rendering and DOM manipulation (UI object)
+        └── editor.js    # WYSIWYG editor: Quill wrapper + HTML sanitizing/rendering helpers
 ```
 
 ## Tech Stack
@@ -42,7 +44,31 @@ A modern, responsive Kanban board implementation featuring drag-and-drop functio
 - **Tailwind CSS** (via CDN)
 - **JavaScript (ES6 Modules)**
 - **SortableJS** (for drag-and-drop)
+- **Quill** (WYSIWYG rich-text editor for card descriptions and comments)
+- **DOMPurify** (sanitizes rich-text HTML before it's rendered)
 - **Cloudflare Turnstile** (for bot protection)
+
+## Rich Text (WYSIWYG)
+
+Card descriptions and comments are edited with a [Quill](https://quilljs.com/) editor (bold,
+italic, underline, strike, ordered/unordered lists, blockquote, inline code, code block, and
+links). `src/js/editor.js` is the only module that talks to Quill/DOMPurify directly:
+
+- `createRichEditor()` mounts an editor and returns `getHtml()` / `setHtml()` / `isEmpty()`.
+- Saved content is a small, fixed subset of HTML (`normalizeEditorHtml`) — Quill's internal
+  markup (e.g. `data-list` attributes, code-block containers) is converted to plain `<ul>/<ol>`
+  and `<pre><code>` before it's sent to the API.
+- Anything rendered back to the page — descriptions, comments, both from this API and from
+  older plain-text data — goes through `toDisplayHtml()`, which runs DOMPurify with a fixed
+  allow-list (`p, br, h1-h3, strong/b, em/i, u, s, code, pre, blockquote, ul/ol/li, a`, `href`
+  only). Legacy plain-text content (saved before this feature existed) is detected and
+  rendered as plain paragraphs rather than raw HTML.
+- Card previews, the archived-cards list, and the search box use `toPlainText()`, a flattened,
+  tag-free version of the content, so list views never show markup.
+- The API itself stores and returns `description`/`content` as opaque strings — it does not
+  know or care whether they're HTML. All sanitization happens client-side, at render time, so
+  it stays effective even if the HTML in storage is ever edited directly or written by another
+  client (see the backend's `CLAUDE.md`/`README.md` for the storage side of this).
 
 ## Getting Started
 

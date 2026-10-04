@@ -1,5 +1,6 @@
 import ApiClient from './api.js';
 import { UI } from './ui.js';
+import { toPlainText } from './editor.js';
 
 class KanbanApp {
     constructor() {
@@ -646,7 +647,7 @@ class KanbanApp {
     cardDetailCallbacks() {
         return {
             onEditTitle: (el, card) => this.handleDetailEdit(el, card, 'title'),
-            onEditDescription: (el, card) => this.handleDetailEdit(el, card, 'description', true),
+            onEditDescription: (el, card) => this.handleDetailEdit(el, card, 'description', false, 'text', true),
             onEditLabels: (el, card) => this.handleDetailEdit(el, card, 'labels'),
             onEditDate: (el, card) => this.handleDetailEdit(el, card, 'dueDate', false, 'date'),
             onEditPriority: (priority, card) => this.handleDetailPriorityChange(priority, card),
@@ -665,13 +666,13 @@ class KanbanApp {
         this.state.cards[card.id] = { ...card, priority: newPriority };
 
         UI.renderBoard(this.state);
-        UI.openCardDetail(this.state.cards[card.id], this.currentRole, this.cardDetailCallbacks());
+        this.showCardDetail(card.id);
 
         try {
             await ApiClient.updateCard(card.id, { priority: newPriority });
         } catch (error) {
             this.state.cards[card.id] = oldCard;
-            UI.openCardDetail(this.state.cards[card.id], this.currentRole, this.cardDetailCallbacks());
+            this.showCardDetail(card.id);
             alert('Failed to save: ' + error.message);
         }
     }
@@ -745,7 +746,7 @@ class KanbanApp {
 
         const cardData = {
             title: document.getElementById('form-title').value,
-            description: document.getElementById('form-description').value,
+            description: UI.descriptionEditor.getHtml(),
             priority: document.querySelector('input[name="priority"]:checked').value,
             dueDate: document.getElementById('form-date').value,
             labels: document.getElementById('form-labels').value.split(',').map(l => l.trim()).filter(l => l !== ''),
@@ -804,35 +805,42 @@ class KanbanApp {
         }
     }
 
-    async handleDetailEdit(el, card, field, multiline = false, type = 'text') {
+    async handleDetailEdit(el, card, field, multiline = false, type = 'text', rich = false) {
         const currentValue = card[field];
         const formattedValue = field === 'labels' ? currentValue.join(', ') : currentValue;
+
+        const onSave = async (newValue) => {
+            let updatedValue = newValue;
+            if (field === 'labels') {
+                updatedValue = newValue.split(',').map(l => l.trim()).filter(l => l !== '');
+            }
+
+            const oldCard = { ...card };
+            this.state.cards[card.id] = { ...card, [field]: updatedValue };
+
+            // Update UI in detail modal
+            UI.renderBoard(this.state);
+            this.showCardDetail(card.id);
+
+            try {
+                await ApiClient.updateCard(card.id, { [field]: updatedValue });
+            } catch (error) {
+                this.state.cards[card.id] = oldCard;
+                this.showCardDetail(card.id);
+                alert('Failed to save: ' + error.message);
+            }
+        };
+
+        if (rich) {
+            await UI.startRichEdit(el, { html: currentValue || '', onSave });
+            return;
+        }
 
         await UI.startInlineEdit(el, {
             value: formattedValue || '',
             multiline: multiline,
             type: type,
-            onSave: async (newValue) => {
-                let updatedValue = newValue;
-                if (field === 'labels') {
-                    updatedValue = newValue.split(',').map(l => l.trim()).filter(l => l !== '');
-                }
-
-                const oldCard = { ...card };
-                this.state.cards[card.id] = { ...card, [field]: updatedValue };
-
-                // Update UI in detail modal
-                UI.renderBoard(this.state);
-                UI.openCardDetail(this.state.cards[card.id], this.currentRole, this.cardDetailCallbacks());
-
-                try {
-                    await ApiClient.updateCard(card.id, { [field]: updatedValue });
-                } catch (error) {
-                    this.state.cards[card.id] = oldCard;
-                    UI.openCardDetail(this.state.cards[card.id], this.currentRole, this.cardDetailCallbacks());
-                    alert('Failed to save: ' + error.message);
-                }
-            }
+            onSave,
         });
     }
 
@@ -869,46 +877,61 @@ class KanbanApp {
     }
 
     async handleOpenCardDetail(cardId) {
-        const card = this.state.cards[cardId];
-        UI.openCardDetail(this.state.cards[card.id], this.currentRole, this.cardDetailCallbacks());
+        this.showCardDetail(cardId);
+    }
 
-        // Load comments
-        const commentsListEl = document.querySelector('.comments-list');
-        if (commentsListEl) {
-            try {
-                const comments = await ApiClient.getComments(cardId);
-                UI.renderComments(commentsListEl, comments);
-            } catch (error) {
-                commentsListEl.innerHTML = `<div class="text-center py-4 text-sm text-red-500">Failed to load comments: ${error.message}</div>`;
-            }
-        }
+    // Renders the card detail modal and wires up its comments. This runs on open AND after every
+    // inline edit (which re-renders the whole modal), so the comment list and the comment editor
+    // are always rebuilt together with the modal body.
+    showCardDetail(cardId) {
+        const card = this.state.cards[cardId];
+        if (!card) return;
+
+        // Keep an unsent comment draft when the modal re-renders for the same card.
+        const modal = document.getElementById('card-detail-modal');
+        const isOpen = !modal.classList.contains('hidden');
+        const draft = isOpen && this.detailCardId === cardId && UI.commentEditor ? UI.commentEditor.getHtml() : '';
+        this.detailCardId = cardId;
+
+        UI.openCardDetail(card, this.currentRole, this.cardDetailCallbacks());
+        if (draft) UI.commentEditor.setHtml(draft);
+
+        this.refreshComments(cardId);
 
         // Handle Add Comment
         const addCommentBtn = document.getElementById('add-comment-btn');
-        if (addCommentBtn) {
-            addCommentBtn.onclick = async () => {
-                const input = document.getElementById('comment-input');
-                const content = input.value.trim();
-                if (!content) return;
+        const submitComment = async () => {
+            const editor = UI.commentEditor;
+            if (!editor || editor.isEmpty()) return;
 
-                if (this.currentRole === 'VIEWER') {
-                    alert('You do not have permission to add comments.');
-                    return;
-                }
+            if (this.currentRole === 'VIEWER') {
+                alert('You do not have permission to add comments.');
+                return;
+            }
 
-                try {
-                    const newComment = await ApiClient.addComment(cardId, content);
-                    // Optimistically add to list or just reload
-                    await this.refreshComments(cardId);
-                    input.value = '';
-                } catch (error) {
-                    alert('Failed to add comment: ' + error.message);
-                }
-            };
-        }
+            addCommentBtn.disabled = true;
+            try {
+                await ApiClient.addComment(cardId, editor.getHtml());
+                editor.clear();
+                await this.refreshComments(cardId);
+            } catch (error) {
+                alert('Failed to add comment: ' + error.message);
+            } finally {
+                addCommentBtn.disabled = false;
+            }
+        };
+        addCommentBtn.onclick = submitComment;
+
+        // Ctrl/Cmd+Enter submits the comment
+        UI.commentEditor.onKeydown((e) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                submitComment();
+            }
+        });
 
         // Handle Delete Comment
-        const modal = document.getElementById('card-detail-modal');
         modal.onclick = async (e) => {
             const deleteBtn = e.target.closest('.delete-comment-btn');
             if (deleteBtn) {
@@ -991,7 +1014,7 @@ class KanbanApp {
             const id = cardEl.dataset.cardId;
             const card = this.state.cards[id];
             const matches = card.title.toLowerCase().includes(term) ||
-                           card.description.toLowerCase().includes(term) ||
+                           toPlainText(card.description).toLowerCase().includes(term) ||
                            card.labels.some(l => l.toLowerCase().includes(term));
 
             cardEl.classList.toggle('hidden', !matches);

@@ -15,6 +15,7 @@ The project is a vanilla JavaScript implementation of a Kanban board using ES6 m
 - `src/js/app.js`: Main application controller (`KanbanApp` class). Manages application state, event listeners, and coordinates between the API and UI.
 - `src/js/api.js`: Data persistence layer (`ApiClient` class). Handles communication with the REST API backend.
 - `src/js/ui.js`: UI rendering and DOM manipulation layer (`UI` object). Handles board rendering, modal controls, and theme switching.
+- `src/js/editor.js`: WYSIWYG rich-text support. Wraps Quill (`createRichEditor`) and provides the sanitize/normalize/plain-text helpers (`sanitizeHtml`, `toDisplayHtml`, `toPlainText`, `normalizeEditorHtml`) used anywhere card `description` or comment `content` is read, written, or displayed.
 
 ### State Management
 - State is maintained as a central object within the `KanbanApp` instance.
@@ -33,4 +34,28 @@ The project is a vanilla JavaScript implementation of a Kanban board using ES6 m
 ### Key Dependencies
 - **Tailwind CSS**: Used for responsive styling.
 - **SortableJS**: Implements the drag-and-drop functionality for moving cards between columns.
+- **Quill** + **DOMPurify**: Rich-text editing and sanitizing for card descriptions/comments (see `src/js/editor.js`).
 - **Cloudflare Turnstile**: Provides bot protection for authentication forms.
+
+### Rich Text (card description / comments)
+- `description` and `content` are plain strings over the wire — the API has no opinion on
+  format. The frontend is what interprets them as HTML, so every read/write path must go
+  through `editor.js`, never a raw template literal:
+  - **Rendering** (card preview, detail view, comments, archived list, search): use
+    `toDisplayHtml()` for rich display or `toPlainText()` for plain-text contexts (previews,
+    search matching). Both are safe to call on legacy plain-text content saved before this
+    feature existed — `toDisplayHtml` detects non-HTML input and escapes it into `<p>` tags
+    instead of rendering it raw.
+  - **Editing**: `createRichEditor(container, { html, placeholder, compact })` mounts Quill in
+    a container and returns `{ getHtml, setHtml, isEmpty, clear, focus, onKeydown, destroy }`.
+    `getHtml()` already runs the content through `normalizeEditorHtml()` (which flattens
+    Quill's internal DOM into plain `<ul>/<ol>`/`<pre><code>`) and `sanitizeHtml()` — don't
+    re-sanitize or re-read `quill.root.innerHTML` directly elsewhere.
+  - **Never** interpolate `card.description` or a comment's `content` into a template string
+    unescaped — always go through `toDisplayHtml`/`toPlainText` first. This is the one field
+    in the app that is genuinely attacker-controlled HTML (any board member can write it), so
+    treat new UI that touches it with the same care as the existing call sites in `ui.js`.
+  - The card-detail modal's description field and the comment composer both use
+    `UI.startRichEdit` / `createRichEditor` — editors are destroyed and recreated whenever the
+    modal re-renders (e.g. after any inline edit), so don't hold a long-lived reference to a
+    Quill instance across a `UI.openCardDetail()` call.

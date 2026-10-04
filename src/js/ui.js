@@ -1,3 +1,5 @@
+import { createRichEditor, toDisplayHtml, toPlainText, escapeHtml } from './editor.js';
+
 export const UI = {
     // DOM Elements
     appAuthView: document.getElementById('app-auth-view'),
@@ -56,6 +58,10 @@ export const UI = {
     inviteMemberForm: document.getElementById('invite-member-form'),
     inviteEmail: document.getElementById('invite-email'),
     inviteRole: document.getElementById('invite-role'),
+
+    // Rich-text editors (created lazily)
+    descriptionEditor: null, // card add/edit form
+    commentEditor: null,     // comment composer in the card detail modal
 
     renderBoard(state, role = 'EDITOR') {
         let roleDisplay = ' (owned)';
@@ -196,7 +202,7 @@ export const UI = {
                     </div>
                 </div>
                 <h4 class="font-semibold text-sm mb-1 text-slate-800 dark:text-slate-100">${card.title}</h4>
-                <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">${card.description || ''}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">${escapeHtml(toPlainText(card.description))}</p>
 
                 <div class="flex items-center justify-between mt-auto">
                     <div class="flex items-center gap-2 text-[10px] text-slate-400">
@@ -261,6 +267,12 @@ export const UI = {
     },
 
     openModal(title, card = null, columnId = null) {
+        if (!this.descriptionEditor) {
+            this.descriptionEditor = createRichEditor(document.getElementById('form-description'), {
+                placeholder: 'Add a description...',
+            });
+        }
+
         this.modalTitle.textContent = card ? 'Edit Card' : title;
         this.cardModal.classList.remove('hidden');
         this.cardModal.classList.add('flex');
@@ -274,15 +286,16 @@ export const UI = {
         if (card) {
             document.getElementById('card-id').value = card.id;
             document.getElementById('form-title').value = card.title;
-            document.getElementById('form-description').value = card.description;
+            this.descriptionEditor.setHtml(card.description);
             document.getElementById('form-date').value = card.dueDate;
             document.getElementById('form-labels').value = card.labels.join(', ');
             document.querySelector(`input[name="priority"][value="${card.priority}"]`).checked = true;
         } else {
             this.cardForm.reset();
+            this.descriptionEditor.clear();
             document.getElementById('card-id').value = '';
             document.getElementById('column-id').value = columnId || '';
-            document.querySelector('input[name="priority"][value="Medium"]').checked = true;
+            document.querySelector('input[name="priority"][value="MEDIUM"]').checked = true;
         }
     },
 
@@ -517,6 +530,74 @@ export const UI = {
         };
     },
 
+    // Inline WYSIWYG editing of a field in the detail modal (used for the description).
+    startRichEdit(displayEl, { html = '', placeholder = 'Add a description...', onSave }) {
+        // Clicks inside the editor bubble up to displayEl's click-to-edit handler; ignore them.
+        if (displayEl.dataset.editing === 'true') return;
+        displayEl.dataset.editing = 'true';
+
+        const originalHTML = displayEl.innerHTML;
+        displayEl.innerHTML = '';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex flex-col gap-2 w-full cursor-auto';
+
+        const editorEl = document.createElement('div');
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.className = 'px-3 py-1 text-xs font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors';
+
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.textContent = 'Save';
+        saveBtn.className = 'px-3 py-1 text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-all active:scale-95 disabled:opacity-50';
+
+        const btnRow = document.createElement('div');
+        btnRow.className = 'flex justify-end gap-2';
+        btnRow.append(cancelBtn, saveBtn);
+
+        wrapper.append(editorEl, btnRow);
+        displayEl.appendChild(wrapper);
+
+        const editor = createRichEditor(editorEl, { html, placeholder });
+        editor.focus();
+
+        const restore = () => {
+            editor.destroy();
+            displayEl.innerHTML = originalHTML;
+            delete displayEl.dataset.editing;
+        };
+
+        const save = async () => {
+            saveBtn.disabled = true;
+            try {
+                await onSave(editor.getHtml());
+                delete displayEl.dataset.editing;
+            } catch (err) {
+                restore();
+                alert('Failed to save: ' + err.message);
+            }
+        };
+
+        // stopPropagation so the click doesn't reach displayEl and immediately re-open the editor
+        cancelBtn.onclick = (e) => { e.stopPropagation(); restore(); };
+        saveBtn.onclick = (e) => { e.stopPropagation(); save(); };
+
+        editor.onKeydown((e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                restore();
+            } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                save();
+            }
+        });
+    },
+
     openCardDetail(card, role, callbacks = {}) {
         const modal = document.getElementById('card-detail-modal');
         const box = modal.querySelector('.relative');
@@ -540,7 +621,7 @@ export const UI = {
 
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-slate-500 tracking-wider">Description</label>
-                    <div class="detail-description text-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded transition-colors whitespace-pre-wrap">${card.description || 'No description - click to add one'}</div>
+                    <div class="detail-description rich-content text-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded transition-colors">${card.description ? toDisplayHtml(card.description) : '<span class="text-slate-400 italic">No description - click to add one</span>'}</div>
                 </div>
 
                 <div class="flex flex-wrap gap-4">
@@ -570,9 +651,11 @@ export const UI = {
                     <div class="comments-list space-y-3">
                         <div class="text-center py-4 text-sm text-slate-400">Loading comments...</div>
                     </div>
-                    <div class="flex gap-2">
-                        <textarea id="comment-input" class="flex-1 p-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none resize-none h-20" placeholder="Write a comment..."></textarea>
-                        <button id="add-comment-btn" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-lg transition-all active:scale-95">Comment</button>
+                    <div class="space-y-2">
+                        <div id="comment-editor"></div>
+                        <div class="flex justify-end">
+                            <button id="add-comment-btn" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-lg transition-all active:scale-95 disabled:opacity-50">Comment</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -598,7 +681,10 @@ export const UI = {
             const titleEl = content.querySelector('.detail-title');
             titleEl.onclick = () => callbacks?.onEditTitle?.(titleEl, card);
             const descEl = content.querySelector('.detail-description');
-            descEl.onclick = () => callbacks?.onEditDescription?.(descEl, card);
+            descEl.onclick = (e) => {
+                if (e.target.closest('a')) return; // let links open instead of entering edit mode
+                callbacks?.onEditDescription?.(descEl, card);
+            };
             const labelsEl = content.querySelector('.detail-labels');
             labelsEl.onclick = () => callbacks?.onEditLabels?.(labelsEl, card);
             const dateEl = content.querySelector('.detail-date');
@@ -623,9 +709,16 @@ export const UI = {
         modal.querySelectorAll('.close-detail-btn').forEach(btn => {
             btn.onclick = () => this.closeDetailModal();
         });
+
+        // Rich-text comment composer (replaced together with the modal body on every render)
+        this.commentEditor = createRichEditor(content.querySelector('#comment-editor'), {
+            placeholder: 'Write a comment...',
+            compact: true,
+        });
     },
 
     closeDetailModal() {
+        this.commentEditor = null;
         const modal = document.getElementById('card-detail-modal');
         const content = modal.querySelector('.relative');
         content.classList.remove('scale-100', 'opacity-100');
@@ -653,7 +746,7 @@ export const UI = {
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     </button>
                 </div>
-                <div class="text-sm text-slate-600 dark:text-slate-400">${c.content}</div>
+                <div class="rich-content text-sm text-slate-600 dark:text-slate-400">${toDisplayHtml(c.content)}</div>
             </div>
         `).join('');
     },
@@ -668,7 +761,7 @@ export const UI = {
             <div class="p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-3">
                 <div>
                     <h4 class="font-bold text-slate-800 dark:text-slate-100 line-clamp-1">${card.title}</h4>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">${card.description || 'No description'}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">${escapeHtml(toPlainText(card.description)) || 'No description'}</p>
                 </div>
                 <div class="flex items-center justify-between mt-auto pt-3 border-t border-slate-100 dark:border-slate-700">
                     <span class="text-[10px] text-slate-400">Archived: ${card.archivedAt ? new Date(card.archivedAt).toLocaleDateString() : 'Unknown'}</span>
