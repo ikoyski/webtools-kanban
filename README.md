@@ -5,6 +5,8 @@ A modern, responsive Kanban board implementation featuring drag-and-drop functio
 ## Features
 
 - **Authentication**: Secure user accounts with Login, Signup, and session persistence.
+- **Password Reset**: "Forgot password?" on the sign-in screen emails a reset link (Turnstile-protected); the link opens `reset-password.html`, where the user chooses a new password.
+- **Change Password**: Signed-in users can change their password from the profile menu (current password + new password, min. 8 characters).
 - **User Profile**: Personalized experience with display names and avatars.
 - **Multi-Board Support**: Create, rename, and switch between multiple Kanban boards.
 - **Collaborative Access**: Invite members to boards with role-based permissions (Owner, Editor, Viewer).
@@ -25,6 +27,7 @@ A modern, responsive Kanban board implementation featuring drag-and-drop functio
 ```text
 .
 ├── index.html          # Main entry point and layout
+├── reset-password.html # Standalone page opened from the password-reset email (?token=...)
 ├── CLAUDE.md           # AI development guidance
 ├── README.md           # Project documentation
 ├── LICENSE             # License information

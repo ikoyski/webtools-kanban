@@ -126,6 +126,18 @@ class KanbanApp {
         UI.renderBoardSwitcher(this.boards, this.currentBoardId);
     }
 
+    // The auth screen has several Turnstile widgets (login, signup, forgot password), so read the
+    // token from the widget inside the given form rather than from a global lookup.
+    getTurnstileToken(form) {
+        const input = form.querySelector('[name="cf-turnstile-response"]');
+        return input && input.value ? input.value : null;
+    }
+
+    resetTurnstile(form) {
+        const widget = form.querySelector('.cf-turnstile');
+        if (widget && typeof turnstile !== 'undefined') turnstile.reset(widget);
+    }
+
     setupAuthListeners() {
         // Popstate listener for browser back/forward
         window.addEventListener('popstate', async () => {
@@ -147,14 +159,52 @@ class KanbanApp {
             UI.loginCard.classList.remove('hidden');
         };
 
+        // Forgot password: Login <-> Forgot Password cards
+        UI.showForgotBtn.onclick = (e) => {
+            e.preventDefault();
+            const loginEmail = document.getElementById('login-email').value;
+            if (loginEmail) document.getElementById('forgot-email').value = loginEmail;
+            UI.forgotSuccess.classList.add('hidden');
+            UI.loginCard.classList.add('hidden');
+            UI.forgotCard.classList.remove('hidden');
+        };
+
+        UI.backToLoginBtn.onclick = (e) => {
+            e.preventDefault();
+            UI.forgotCard.classList.add('hidden');
+            UI.loginCard.classList.remove('hidden');
+        };
+
+        // Forgot Password Submit
+        UI.forgotForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email').value.trim();
+            const turnstileToken = this.getTurnstileToken(UI.forgotForm);
+            if (!turnstileToken) {
+                alert('Please complete the security check.');
+                return;
+            }
+
+            const submitBtn = UI.forgotForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            try {
+                await ApiClient.forgotPassword(email, turnstileToken);
+                // Same message whether or not the account exists (the API doesn't reveal it either).
+                UI.forgotSuccess.classList.remove('hidden');
+            } catch (error) {
+                alert('Could not send reset link: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                this.resetTurnstile(UI.forgotForm); // tokens are single-use
+            }
+        };
+
         // Login Submit
         UI.loginForm.onsubmit = async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
-            const turnstile = document.querySelector('[name="cf-turnstile-response"]').value;
-
-            const turnstileToken = typeof turnstile !== 'undefined' ? turnstile : null;
+            const turnstileToken = this.getTurnstileToken(UI.loginForm);
             if (!turnstileToken) {
                 alert('Please complete the security check.');
                 return;
@@ -185,7 +235,7 @@ class KanbanApp {
             const password = document.getElementById('signup-password').value;
             const displayName = document.getElementById('signup-name').value;
 
-            const turnstileToken = typeof turnstile !== 'undefined' ? turnstile.getResponse() : null;
+            const turnstileToken = this.getTurnstileToken(UI.signupForm);
             if (!turnstileToken) {
                 alert('Please complete the security check.');
                 return;
@@ -422,11 +472,49 @@ class KanbanApp {
             this.handleLogout();
         };
 
-        // Change Password Placeholder
-        if (UI.changePasswordMenu) {
-            UI.changePasswordMenu.onclick = (e) => {
-                e.stopPropagation();
-                UI.menuDropdown.classList.add('hidden');
+        // Change Password
+        UI.changePasswordMenu.onclick = (e) => {
+            e.stopPropagation();
+            UI.menuDropdown.classList.add('hidden');
+            UI.openChangePasswordModal();
+        };
+        document.getElementById('close-change-password-modal').onclick = () => UI.closeChangePasswordModal();
+        document.getElementById('cancel-change-password').onclick = () => UI.closeChangePasswordModal();
+        UI.changePasswordModal.onclick = (e) => {
+            if (e.target === UI.changePasswordModal) UI.closeChangePasswordModal();
+        };
+        document.getElementById('change-show-passwords').onchange = (e) => {
+            const type = e.target.checked ? 'text' : 'password';
+            ['current-password', 'change-new-password', 'change-confirm-password'].forEach(id => {
+                document.getElementById(id).type = type;
+            });
+        };
+        UI.changePasswordForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const oldPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('change-new-password').value;
+            const confirmPassword = document.getElementById('change-confirm-password').value;
+            const showError = (msg) => {
+                UI.changePasswordError.textContent = msg;
+                UI.changePasswordError.classList.remove('hidden');
+            };
+            UI.changePasswordError.classList.add('hidden');
+
+            if (newPassword.length < 8) return showError('New password must be at least 8 characters long.');
+            if (newPassword !== confirmPassword) return showError('New passwords do not match.');
+            if (newPassword === oldPassword) return showError('New password must be different from your current password.');
+
+            const submitBtn = document.getElementById('change-password-submit');
+            submitBtn.disabled = true;
+            try {
+                await ApiClient.changePassword(oldPassword, newPassword);
+                UI.closeChangePasswordModal();
+                alert('Your password has been updated.');
+            } catch (error) {
+                // e.g. "Incorrect current password" (400) — shown inline, the session stays signed in.
+                showError(error.message);
+            } finally {
+                submitBtn.disabled = false;
             }
         };
 

@@ -10,6 +10,11 @@ export const UI = {
     signupForm: document.getElementById('signup-form'),
     showSignupBtn: document.getElementById('show-signup'),
     showLoginBtn: document.getElementById('show-login'),
+    forgotCard: document.getElementById('forgot-card'),
+    forgotForm: document.getElementById('forgot-form'),
+    forgotSuccess: document.getElementById('forgot-success'),
+    showForgotBtn: document.getElementById('show-forgot'),
+    backToLoginBtn: document.getElementById('back-to-login'),
     boardName: document.getElementById('board-name'),
     boardContainer: document.getElementById('board-container'),
     boardSwitcher: document.getElementById('board-switcher'),
@@ -36,6 +41,9 @@ export const UI = {
     aboutModal: document.getElementById('about-modal'),
     closeAboutModalBtn: document.getElementById('close-about-modal'),
     aboutOkBtn: document.getElementById('about-ok-btn'),
+    changePasswordModal: document.getElementById('change-password-modal'),
+    changePasswordForm: document.getElementById('change-password-form'),
+    changePasswordError: document.getElementById('change-password-error'),
     cardModal: document.getElementById('card-modal'),
     modalTitle: document.getElementById('modal-title'),
     cardForm: document.getElementById('card-form'),
@@ -337,6 +345,33 @@ export const UI = {
             this.aboutModal.querySelector('.relative').classList.remove('scale-95', 'opacity-0');
             this.aboutModal.querySelector('.relative').classList.add('scale-100', 'opacity-100');
         }, 10);
+    },
+
+    openChangePasswordModal() {
+        this.changePasswordForm.reset();
+        this.changePasswordError.classList.add('hidden');
+        ['current-password', 'change-new-password', 'change-confirm-password'].forEach(id => {
+            document.getElementById(id).type = 'password';
+        });
+        this.changePasswordModal.classList.remove('hidden');
+        this.changePasswordModal.classList.add('flex');
+        setTimeout(() => {
+            const content = this.changePasswordModal.querySelector('.relative');
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+            document.getElementById('current-password').focus();
+        }, 10);
+    },
+
+    closeChangePasswordModal() {
+        const content = this.changePasswordModal.querySelector('.relative');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        this.changePasswordForm.reset(); // don't leave passwords sitting in the DOM
+        setTimeout(() => {
+            this.changePasswordModal.classList.add('hidden');
+            this.changePasswordModal.classList.remove('flex');
+        }, 200);
     },
 
     closeAboutModal() {

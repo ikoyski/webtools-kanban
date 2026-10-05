@@ -1,4 +1,4 @@
-const BASE_URL = 'https://api.ikoyski.top/kanban-backend';
+const BASE_URL = 'http://192.168.0.21:8099/kanban-backend'; //'https://api.ikoyski.top/kanban-backend';
 
 class ApiClient {
   static async request(endpoint, options = {}) {
@@ -33,7 +33,9 @@ class ApiClient {
           try {
               if (errorText) {
                   const errorData = JSON.parse(errorText);
-                  errorMessage = errorData.message || errorMessage;
+                  // Validation errors are shaped like { field: "message" } with no top-level "message".
+                  const fieldErrors = Object.values(errorData).filter(v => typeof v === 'string').join(' ');
+                  errorMessage = errorData.message || fieldErrors || errorMessage;
               }
           } catch (e) {
               // Fallback if error body isn't JSON
@@ -61,6 +63,27 @@ class ApiClient {
     return this.request('/v1/auth/signup', {
       method: 'POST',
       body: JSON.stringify({ email, password, displayName, turnstileToken }),
+    });
+  }
+
+  static async forgotPassword(email, turnstileToken) {
+    return this.request('/v1/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email, turnstileToken }),
+    });
+  }
+
+  static async resetPassword(token, newPassword) {
+    return this.request('/v1/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword }),
+    });
+  }
+
+  static async changePassword(oldPassword, newPassword) {
+    return this.request('/v1/auth/password', {
+      method: 'PATCH',
+      body: JSON.stringify({ oldPassword, newPassword }),
     });
   }
 

@@ -15,6 +15,7 @@ The project is a vanilla JavaScript implementation of a Kanban board using ES6 m
 - `src/js/app.js`: Main application controller (`KanbanApp` class). Manages application state, event listeners, and coordinates between the API and UI.
 - `src/js/api.js`: Data persistence layer (`ApiClient` class). Handles communication with the REST API backend.
 - `src/js/ui.js`: UI rendering and DOM manipulation layer (`UI` object). Handles board rendering, modal controls, and theme switching.
+- `reset-password.html`: Standalone page (own inline module script, imports `api.js`) that the backend's reset email links to as `reset-password.html?token=...`. It reads the token once, strips it from the URL, and calls `ApiClient.resetPassword`. The backend's `webtools.frontend.reset-password-url` (Config Server) must point at this file's deployed URL.
 - `src/js/editor.js`: WYSIWYG rich-text support. Wraps Quill (`createRichEditor`) and provides the sanitize/normalize/plain-text helpers (`sanitizeHtml`, `toDisplayHtml`, `toPlainText`, `normalizeEditorHtml`) used anywhere card `description` or comment `content` is read, written, or displayed.
 
 ### State Management
@@ -24,6 +25,12 @@ The project is a vanilla JavaScript implementation of a Kanban board using ES6 m
 - State changes are persisted via `ApiClient` to a REST API backend, using optimistic updates for a snappy UI.
 - **Authentication**: Users are authenticated via JWTs stored in `localStorage`. Session state is checked on startup and before board initialization.
 - **Role-Based Access Control (RBAC)**: The app enforces roles (`OWNER`, `EDITOR`, `VIEWER`). Mutating actions and certain UI elements are gated based on the current board role.
+
+### Auth screen
+- `index.html` has three cards in `#app-auth-view`: login, signup, forgot password. Each form has its own Cloudflare Turnstile widget, so always read the token with `app.getTurnstileToken(form)` (scoped to that form) — never `turnstile.getResponse()` or a global `querySelector` — and call `resetTurnstile(form)` after a submit that consumed the token.
+
+- Change Password lives in `#change-password-modal` (opened from the profile menu's `#change-password-menu`, `PATCH /v1/auth/password`). A wrong current password comes back as HTTP 400 (not 401), so it's shown inline and does not trigger the `auth-expired` logout.
+- API validation errors are shaped `{ field: "message" }` with no `message` key; `ApiClient.request` joins those values into the thrown error message.
 
 ### UI Interaction Patterns
 - **DOM Access**: The `UI` object centralizes access to common DOM elements.
